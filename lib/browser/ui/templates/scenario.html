@@ -1,0 +1,20 @@
+<% if (! filtered) { %>
+
+<li class="scenario <%= tests.status %>">
+  <div class="heading <%= steps.length ? 'toggle' : '' %>">
+    <div>Scenario: <%= name %></div>
+    <% if (tests.status === 'missing') { %>
+    <div class="generate-missing-steps">Generate Missing Step Definitions</div>
+    <% } %>
+    <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === 'number' ? 'ms' : '') %></span>
+  </div>
+  <% if (skip) { %>
+  <div>Skipping steps</div>
+  <% } else { %>
+  <ol class="content steps">
+    <div template="step" records="steps"></div>
+  </ol>
+  <% } %>
+</li>
+
+<% } %>

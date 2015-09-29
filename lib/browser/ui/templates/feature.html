@@ -1,0 +1,20 @@
+
+<li class="feature <%= tests.status %>">
+  <div class="heading <%= scenarios.length ? 'toggle' : '' %>">
+    <span class="module" title="Module: <%= parentModule + '/' + module %>/">/<%= module %>/</span>
+    <div>
+        <div class="name">Feature: <%= name %></div>
+        <div class="stats"></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="narrative">
+      <% _.each(narrative, function(line) { %>
+      <p><%= line %></p>
+      <% }); %>
+    </div>
+    <ul class="scenarios">
+      <div template="scenario" records="scenarios"></div>
+    </ul>
+  </div>
+</li>

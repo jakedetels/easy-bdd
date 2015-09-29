@@ -1,0 +1,24 @@
+{
+  "name": "easy-bdd",
+  "version": "0.0.0",
+  "author": "Jake Detels <jake.detels@gmail.com>",
+  "main": "lib/server/main",
+  "private": true,
+  "devDependencies": {
+    "broccoli": "^0.15.3",
+    "broccoli-babel-transpiler": "^4.1.0",
+    "broccoli-export-text": "0.0.1",
+    "broccoli-funnel": "^0.2.3",
+    "broccoli-less-single": "^0.4.0",
+    "broccoli-merge-trees": "^0.2.1",
+    "broccoli-rename-files": "0.0.3",
+    "broccoli-sane-watcher": "^1.1.4",
+    "broccoli-sourcemap-concat": "^0.4.3",
+    "broccoli-uglify-sourcemap": "^0.2.1",
+    "ember-cli-copy-dereference": "^1.0.0",
+    "fs-extra": "^0.24.0",
+    "quick-temp": "^0.1.3",
+    "rsvp": "^3.1.0",
+    "testem": "^0.9.5"
+  }
+}
