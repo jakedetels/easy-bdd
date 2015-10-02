@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Easy BDD Tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="easy-bdd.css">
+    <style type="text/css">
+      #easy-bdd-fixture {
+        zoom: 0.5;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        height: 800px;
+        width: 1000px;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="easy-bdd-fixture"></div>
+    <script src="../testem.js"></script>
+    {{app.js}}
+    <script src="tests.js"></script>
+    <script>
+      var _require = window.require;
+
+      window.require = function(moduleName, mocks) {
+        if (arguments.length === 1) {
+          return _require(moduleName);
+        }
+
+        var originalDeps = {};
+        var name, mod;
+        
+        // Add mocks to registry
+        for (name in mocks) {
+          mod = _require.entries[name];
+          originalDeps[name] = mod.callback;
+          mod.callback = createCallback(mocks[name]);
+        }
+
+        function createCallback(mockModule) {
+          return function() {
+            return mockModule;
+          };
+        }
+
+        var exports = _require(moduleName);
+
+        // Restore registry
+        for (name in originalDeps) {
+          requirejs.unsee(name);
+          _require.entries[name].callback = originalDeps[name];
+        }
+
+        return exports;
+
+      };
+    </script>
+    <script src="easy-bdd.min.js"></script>
+  </body>
+</html>

@@ -10,7 +10,7 @@ var compileLess   = require('broccoli-less-single');
 var EOL   = require('os').EOL;
 var app   = __dirname + '/lib/browser';
 
-var styles = compileLess(app, 'styles/main.less', 'easy-bdd.css');
+var styles = compileLess(__dirname + '/lib/runner/styles', 'main.less', 'easy-bdd.css');
 
 var appJs = new BrocText(app, {extensions: 'html'});
 
