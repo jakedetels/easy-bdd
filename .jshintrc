@@ -2,7 +2,8 @@
   "predef": [
     "document",
     "window",
-    "BDD"
+    "BDD",
+    "blanket"
   ],
   "node": true,
   "browser": true,

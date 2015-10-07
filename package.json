@@ -4,9 +4,14 @@
   "author": "Jake Detels <jake.detels@gmail.com>",
   "main": "lib/server/main",
   "private": true,
+  "scripts": {
+    "start": "broccoli serve",
+    "test" : "node bdd.js",
+    "build": "( if exist dist rmdir dist /s /q ) && broccoli build dist"
+  },
   "devDependencies": {
     "broccoli": "^0.15.3",
-    "broccoli-babel-transpiler": "^4.1.0",
+    "broccoli-babel-transpiler": "^5.4.5",
     "broccoli-export-text": "0.0.1",
     "broccoli-funnel": "^0.2.3",
     "broccoli-less-single": "^0.4.0",

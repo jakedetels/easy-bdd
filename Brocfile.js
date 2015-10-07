@@ -34,7 +34,8 @@ var vendor  = concatFiles(bower, {
     'jquery/dist/jquery.js',
     'jquery-no-conflict.js',
     'chai/chai.js',
-    'underscore/underscore.js'
+    'underscore/underscore.js',
+    'blanket/dist/qunit/blanket.js'
   ],
   outputFile: '/vendor.js',
   separator: ';' + EOL,
@@ -61,7 +62,7 @@ appJs = concatFiles(mergeTrees([appJs, vendor]), {
     'vendor.js',
     'application.js'
   ],
-  outputFile: 'easy-bdd.min.js',
+  outputFile: 'easy-bdd.js',
   separator: EOL,
   header: header,
   footer: footer
