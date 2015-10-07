@@ -37,6 +37,7 @@ var vendorFiles = [
   'jquery-no-conflict.js',
   'chai/chai.js',
   'underscore/underscore.js',
+  'sinon/index.js',
   'blanket/dist/qunit/blanket.js'
 ];
 
