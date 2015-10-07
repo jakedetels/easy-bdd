@@ -2,7 +2,6 @@
   "predef": [
     "document",
     "window",
-    "BDD",
     "blanket"
   ],
   "node": true,
@@ -29,5 +28,6 @@
   "strict": false,
   "white": false,
   "eqnull": true,
-  "esnext": true
+  "esnext": true,
+  "unused": true
 }

@@ -1,30 +1,36 @@
 {
   "name": "easy-bdd",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Jake Detels <jake.detels@gmail.com>",
   "main": "lib/server/main",
   "private": true,
-  "scripts": {
-    "start": "broccoli serve",
-    "test" : "node bdd.js",
-    "build": "( if exist dist rmdir dist /s /q ) && broccoli build dist"
+  "repository" : {
+    "type": "git",
+    "url": "https://github.com/jakedetels/easy-bdd.git"
   },
-  "devDependencies": {
+  "scripts": {
+    "start": "set easy_bdd_env=development && broccoli serve",
+    "test" : "set easy_bdd_env=test && node bdd.js",
+    "build": "set easy_bdd_env=production && ( if exist dist rmdir dist /s /q ) && broccoli build dist"
+  },
+  "dependencies": {
     "broccoli": "^0.15.3",
     "broccoli-babel-transpiler": "^5.4.5",
     "broccoli-export-text": "0.0.1",
     "broccoli-funnel": "^0.2.3",
-    "broccoli-less-single": "^0.4.0",
     "broccoli-merge-trees": "^0.2.1",
     "broccoli-rename-files": "0.0.3",
     "broccoli-sane-watcher": "^1.1.4",
     "broccoli-sourcemap-concat": "^0.4.3",
     "broccoli-string-replace": "^0.1.0",
-    "broccoli-uglify-sourcemap": "^0.2.1",
     "ember-cli-copy-dereference": "^1.0.0",
     "fs-extra": "^0.24.0",
     "quick-temp": "^0.1.3",
     "rsvp": "^3.1.0",
     "testem": "^0.9.5"
+  },
+  "devDependencies": {
+    "broccoli-less-single": "^0.4.0",
+    "broccoli-uglify-sourcemap": "^0.2.1"
   }
 }
