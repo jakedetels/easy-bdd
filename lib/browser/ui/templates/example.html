@@ -1,0 +1,14 @@
+<tr class="example <%= test.status %> <%= test.status === 'failed' ? 'toggle' : '' %> ">
+  <td class="index"><%= _index %></td>
+  <td class="status"><%= test.status %></td>
+  <% _.each(headers, function(header) { %>
+  <td><%= data[header] %></td>
+  <% }); %>
+</tr>
+<% if (test.error) { %>
+<tr class="example-error">
+  <td colspan="<%= 2 + headers.length %>">
+    <div template="error" records="test.error"></div>
+  </td>
+</tr>
+<% } %>

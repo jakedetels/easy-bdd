@@ -8,6 +8,7 @@
     <% } %>
     <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === 'number' ? 'ms' : '') %></span>
   </div>
+  
   <% if (skip) { %>
   <div>Skipping steps</div>
   <% } else { %>
@@ -15,6 +16,25 @@
     <div template="step" records="steps"></div>
   </ol>
   <% } %>
+
+  <% if (examples.length) { %>
+  <h2>Examples:</h2>
+  <table class="examples">
+    <thead>
+      <tr>
+        <td class="index">No.</td>
+        <td class="status">Status</td>
+        <% _.each(examples.headers, function(header) { %>
+        <td><%= header %></td>
+        <% }); %>
+      </tr>
+    </thead>
+    <tbody>
+      <tr template="example" records="examples"></tr>
+    </tbody>
+  </table>
+  <% } %>
+
 </li>
 
 <% } %>

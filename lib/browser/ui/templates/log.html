@@ -1,11 +1,6 @@
-<% if (obj instanceof Error) { %>
+<% if (obj.message && obj.stackArray) { %>
 <li class="log error">
-  <div class="heading message toggle"><%= obj.message %></div>
-  <div class="content stack">
-    <% _.each(obj.stackArray, function(line) { %>
-    <div><%= line %></div>
-    <% }); %>
-  </div>
+  <div template="error"></div>
 </li>
 <% } else { %>
 <li class="log assertion">

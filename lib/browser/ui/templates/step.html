@@ -1,6 +1,6 @@
 <li class="step <%= tests.status + ' step-prefix-' + prefix.toLowerCase() %>">
   <div class="heading <%= tests.log.length ? 'toggle' : '' %>">
-    <span name><%= prefix + ' ' + name %></span>
+    <span name><%- prefix + ' ' + name %></span>
   </div>
   <ul class="content logs">
     <div template="log" records="tests.log"></div>
