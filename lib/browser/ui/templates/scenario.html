@@ -1,9 +1,9 @@
-<% if (! filtered) { %>
+<% if (! exclude) { %>
 
-<li class="scenario <%= tests.status %>">
+<li class="scenario <%= result.status %>">
   <div class="heading <%= steps.length ? 'toggle' : '' %>">
     <div>Scenario: <%= name %></div>
-    <% if (tests.status === 'missing') { %>
+    <% if (result.status === 'missing') { %>
     <div class="generate-missing-steps">Generate Missing Step Definitions</div>
     <% } %>
     <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === 'number' ? 'ms' : '') %></span>
@@ -12,13 +12,28 @@
   <% if (skip) { %>
   <div>Skipping steps</div>
   <% } else { %>
+
   <ol class="content steps">
+    <% if (tests.length === 1) { %>
     <div template="step" records="steps"></div>
+    <% } else { %>
+      <% _.each(steps, function(step) { %>
+
+      <li class="step <%= step.result.status + ' step-prefix-' + step.prefix.toLowerCase() %>">
+        <div class="heading">
+          <span name><%- step.prefix + ' ' + step.name %></span>
+        </div>
+      </li>
+
+      <% }); %>
+    <% } %>
   </ol>
+
   <% } %>
 
   <% if (examples.length) { %>
   <h2>Examples:</h2>
+  <div>Passed: <span><%= result.passed %></span>Failed: <span><%= result.failed %></span></div>
   <table class="examples">
     <thead>
       <tr>
@@ -27,6 +42,7 @@
         <% _.each(examples.headers, function(header) { %>
         <td><%= header %></td>
         <% }); %>
+        <td>Time</td>
       </tr>
     </thead>
     <tbody>

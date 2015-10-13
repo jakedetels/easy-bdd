@@ -38,6 +38,21 @@ require = requirejs = (function(_require) {
     newRequire[key] = _require[key];
   }
 
+
+  newRequire.clear = function(path) {
+    if (! path) {
+      return _require.clear();
+    }
+
+    var regex = new RegExp('^' + path);
+
+    for (var moduleName in _require.entries) {
+      if (moduleName.match(regex)) {
+        _require.unsee(moduleName);
+      }
+    }
+  };
+
   return newRequire;
 
 })(require);

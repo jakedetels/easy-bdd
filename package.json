@@ -1,16 +1,16 @@
 {
   "name": "easy-bdd",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Jake Detels <jake.detels@gmail.com>",
   "main": "lib/server/main",
   "private": true,
-  "repository" : {
+  "repository": {
     "type": "git",
     "url": "https://github.com/jakedetels/easy-bdd.git"
   },
   "scripts": {
     "start": "set easy_bdd_env=development && broccoli serve",
-    "test" : "set easy_bdd_env=test && node bdd.js",
+    "test": "node bdd.js",
     "build": "set easy_bdd_env=production && ( if exist dist rmdir dist /s /q ) && broccoli build dist"
   },
   "dependencies": {
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "broccoli-less-single": "^0.4.0",
-    "broccoli-uglify-sourcemap": "^0.2.1"
+    "broccoli-uglify-sourcemap": "^0.2.1",
+    "copy-dereference": "^1.0.0"
   }
 }

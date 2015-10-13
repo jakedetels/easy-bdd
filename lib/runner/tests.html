@@ -11,10 +11,8 @@
   <body>
     {{test-body}}
     <script src="../testem.js"></script>
-    <script src="./runner-support/loader.js"></script>
-    <script src="./runner-support/loaderjs-mocks.js"></script>
-    <script src="tests.js"></script>
     {{app.js}}
+    <script src="tests.js"></script>
     <script>
       BDD_options = {
         appModuleRoot: '{{appModuleRoot}}'

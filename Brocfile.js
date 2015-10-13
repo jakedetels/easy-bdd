@@ -29,9 +29,11 @@ var babelOptions = {
 
 appJs = babel(appJs, babelOptions);
 
-var bower = mergeTrees([__dirname + '/bower_components', __dirname + '/bower_modifications']);
+var bowerModificationsTree = __dirname + '/bower_modifications';
+var bower = mergeTrees([__dirname + '/bower_components', bowerModificationsTree]);
 
 var vendorFiles = [
+  'loader.js/loader.js',
   'loader-amd-support.js',
   'jquery/dist/jquery.js',
   'jquery-no-conflict.js',
@@ -41,8 +43,9 @@ var vendorFiles = [
   'blanket/dist/qunit/blanket.js'
 ];
 
-if (ENVIRONMENT !== 'test') {
-  vendorFiles.unshift('loader.js/loader.js');
+
+if (ENVIRONMENT === 'test') {
+  vendorFiles.splice(1, 0, 'loader-globalize.js');
 }
 
 var vendor  = concatFiles(bower, {
@@ -59,24 +62,24 @@ appJs = concatFiles(appJs, {
   description: 'Concat: All my application JS'
 });
 
-var header = '';
-var footer = '';
+var header = 
+    '\n/** Easy BDD - A behaviorially-driven development framework **/'
+  + '\n\n(function() {\n';
 
-if (ENVIRONMENT !== 'test') {
-  header = 
-      '\n/** Easy BDD - A behaviorially-driven development framework **/'
-    + '\n\n(function() {\n';
+var footer = '\n\n})();\n';
 
-  footer = 
-      '\nrequire("bdd/index");'
-    + '\n\n})();\n';
-}
-
-appJs = concatFiles(mergeTrees([appJs, vendor]), {
-  inputFiles: [
+var trees = [appJs, vendor];
+var inputFiles = [
     'vendor.js',
     'application.js'
-  ],
+  ];
+
+if (ENVIRONMENT !== 'test') {
+  footer = '\nrequire("bdd/index");' + footer;
+}
+
+appJs = concatFiles(mergeTrees(trees), {
+  inputFiles: inputFiles,
   outputFile: ENVIRONMENT === 'test' ? 'easy-bdd-test.js' : 'easy-bdd.js',
   separator: EOL,
   header: header,

@@ -1,14 +1,16 @@
-<tr class="example <%= test.status %> <%= test.status === 'failed' ? 'toggle' : '' %> ">
+<tr class="example <%= result.status %> <%= result.status === 'failed' ? 'toggle' : '' %> ">
   <td class="index"><%= _index %></td>
-  <td class="status"><%= test.status %></td>
+  <td class="status"><%= result.status %></td>
   <% _.each(headers, function(header) { %>
   <td><%= data[header] %></td>
   <% }); %>
+  <td><%= result.elapsedTime %>ms</td>
 </tr>
-<% if (test.error) { %>
+<% if (result.error) { %>
 <tr class="example-error">
   <td colspan="<%= 2 + headers.length %>">
-    <div template="error" records="test.error"></div>
+    <div>Failed at step "<span><%- result.failedStep.prefix + ' ' + result.failedStep.name %></span>"</div>
+    <div template="error" records="result.error"></div>
   </td>
 </tr>
 <% } %>

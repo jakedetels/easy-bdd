@@ -4,6 +4,7 @@
 </li>
 <% } else { %>
 <li class="log assertion">
+  <% if (obj.toString() === '[object Object]') {debugger;} %>
   <div><%= obj %></div>
 </li>
 <% } %>
