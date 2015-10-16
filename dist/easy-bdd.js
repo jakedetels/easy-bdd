@@ -29393,6 +29393,54 @@ define('bdd/Filter', ['exports', 'module', 'underscore', './utils/query-params']
   module.exports = new Filter();
 });
 
+define('bdd/assertions', ['exports', 'BDD', 'chai'], function (exports, _BDD, _chai) {
+  exports.__esModule = true;
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _BDD2 = _interopRequireDefault(_BDD);
+
+  var _chai2 = _interopRequireDefault(_chai);
+
+  var assert = wrapMethod(_chai2['default'].assert);
+  exports.assert = assert;
+  var expect = wrapMethod(_chai2['default'].expect);
+
+  exports.expect = expect;
+  wrap(_chai2['default'].assert, assert);
+  wrap(_chai2['default'].expect, expect);
+
+  function wrap(originalClass, newClass) {
+    Object.keys(originalClass).forEach(function (key) {
+      var value = originalClass[key];
+      if (typeof value !== 'function') {
+        return;
+      }
+      newClass[key] = wrapMethod(value);
+    });
+  }
+
+  // chai.should is not exposed as a global for the same reasons described here:
+  // https://github.com/switchfly/ember-cli-mocha/issues/37#issuecomment-75460873
+  // window['should'] = wrapMethod('should');
+
+  // BDD.chai.config.includeStack = true;
+
+  function wrapMethod(fn) {
+    return function () {
+      var step = _BDD2['default'].activeStep;
+
+      if (!step) {
+        throw new Error('Assertions cannot be run outside of a scenario step.');
+      }
+
+      var assertion = fn.apply(_chai2['default'], arguments);
+      step.result.assertions.push(assertion);
+      return assertion;
+    };
+  }
+});
+
 define('bdd/blanket/adapter', ['exports', './loaderjs-adapter', '../Events'], function (exports, _loaderjsAdapter, _Events) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -29484,7 +29532,7 @@ define('bdd/blanket/loaderjs-adapter', ['exports'], function (exports) {
   }
 });
 
-define('bdd/helpers/helpers', ['exports', 'module', 'jquery', 'BDD'], function (exports, module, _jquery, _BDD) {
+define('bdd/helpers/helpers', ['exports', 'module', 'jquery', 'BDD', '../assertions'], function (exports, module, _jquery, _BDD, _assertions) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -29492,45 +29540,82 @@ define('bdd/helpers/helpers', ['exports', 'module', 'jquery', 'BDD'], function (
   var _BDD2 = _interopRequireDefault(_BDD);
 
   module.exports = {
-    click: click
+    click: click,
+    fillIn: fillIn
   };
 
   function click(selector, context) {
+    var $el = findWithAssert(selector, context);
+
+    $el.click();
+  }
+
+  function fillIn(selector, context, values) {
+    if (arguments.length === 2) {
+      values = context;
+      context = 'body';
+    }
+
+    var $el = findWithAssert(selector, context);
+
+    if (!$el.first().is(':input')) {
+      return reject('"' + selector + '" is not a form element');
+    }
+
+    var type = $el.first().attr('type') || '';
+    values = [].concat(values);
+
+    if (type.match(/radio|checkbox/)) {
+
+      $el.filter(function () {
+        return values.indexOf(_$['default'](this).attr('value')) > -1;
+      }).prop('checked', true);
+    }
+
+    $el.val(values.join(''));
+  }
+
+  function findWithAssert(selector, context) {
     var $el = _$['default'](selector, context);
-    if ($el.length === 0 && _BDD2['default'].activeTestPromise) {
+
+    if ($el.length) {
+      return $el;
+    }
+
+    reject('No element found: ' + selector);
+  }
+
+  function reject(msg) {
+    if (_BDD2['default'].activeStepPromise) {
       try {
-        _BDD2['default'].assert(false, 'No element found: ' + selector);
+        _assertions.assert(false, msg);
       } catch (e) {
-        _BDD2['default'].activeTestPromise.reject(e);
+        _BDD2['default'].activeStepPromise.reject(e);
       }
-    } else {
-      $el.click();
     }
   }
 });
 
-define('bdd/index', ['exports', 'jquery', './models/feature-tree/FeatureTree', './models/feature/Feature', './models/scenario/Scenario', './models/scenario/Example', './models/step/StepRecord', './models/step/StepFunction', './models/world/World', './models/universe/Universe', './initialize-testing', './ui/index', './utils/index', './Events', './Filter', './helpers/helpers', 'underscore'], function (exports, _jquery, _modelsFeatureTreeFeatureTree, _modelsFeatureFeature, _modelsScenarioScenario, _modelsScenarioExample, _modelsStepStepRecord, _modelsStepStepFunction, _modelsWorldWorld, _modelsUniverseUniverse, _initializeTesting, _uiIndex, _utilsIndex, _Events, _Filter, _helpersHelpers, _underscore) {
+define('bdd/index', ['exports', 'jquery', './models/FeatureTree', './models/Feature', './models/Scenario', './models/Example', './models/StepRecord', './models/StepFunction', './models/World', './models/Universe', './ui/index', './utils/index', './Events', './Filter', './helpers/helpers', 'underscore'], function (exports, _jquery, _modelsFeatureTree, _modelsFeature, _modelsScenario, _modelsExample, _modelsStepRecord, _modelsStepFunction, _modelsWorld, _modelsUniverse, _uiIndex, _utilsIndex, _Events, _Filter, _helpersHelpers, _underscore) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
 
-  var _FeatureTree = _interopRequireDefault(_modelsFeatureTreeFeatureTree);
+  var _FeatureTree = _interopRequireDefault(_modelsFeatureTree);
 
-  var _Feature = _interopRequireDefault(_modelsFeatureFeature);
+  var _Feature = _interopRequireDefault(_modelsFeature);
 
-  var _Scenario = _interopRequireDefault(_modelsScenarioScenario);
+  var _Scenario = _interopRequireDefault(_modelsScenario);
 
-  var _Example = _interopRequireDefault(_modelsScenarioExample);
+  var _Example = _interopRequireDefault(_modelsExample);
 
-  var _StepRecord = _interopRequireDefault(_modelsStepStepRecord);
+  var _StepRecord = _interopRequireDefault(_modelsStepRecord);
 
-  var _StepFunction = _interopRequireDefault(_modelsStepStepFunction);
+  var _StepFunction = _interopRequireDefault(_modelsStepFunction);
 
-  var _World = _interopRequireDefault(_modelsWorldWorld);
+  var _World = _interopRequireDefault(_modelsWorld);
 
-  var _Universe = _interopRequireDefault(_modelsUniverseUniverse);
-
-  var _init = _interopRequireDefault(_initializeTesting);
+  var _Universe = _interopRequireDefault(_modelsUniverse);
 
   var _UI = _interopRequireDefault(_uiIndex);
 
@@ -29570,7 +29655,6 @@ define('bdd/index', ['exports', 'jquery', './models/feature-tree/FeatureTree', '
     StepRecord: _StepRecord['default'],
     StepFunction: _StepFunction['default'],
     Events: _Events2['default'],
-    start: _init['default'],
     ui: ui,
     utils: _utils['default'],
     queryParams: _utils['default'].queryParams(),
@@ -29607,7 +29691,7 @@ define('bdd/index', ['exports', 'jquery', './models/feature-tree/FeatureTree', '
 
   function begin() {
     setTimeout(function () {
-      _init['default']().then(function () {
+      init().then(function () {
         if (testemAdapter) {
           testemAdapter.end();
         }
@@ -29623,95 +29707,15 @@ define('bdd/index', ['exports', 'jquery', './models/feature-tree/FeatureTree', '
   } else {
     begin();
   }
-});
 
-define('bdd/initialize-testing', ['exports', 'module', 'BDD'], function (exports, module, _BDD) {
-  module.exports = initialize_testing;
+  function init() {
+    BDD.tree.init();
 
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+    var features = BDD.tree.getFeatures();
 
-  var _BDD2 = _interopRequireDefault(_BDD);
-
-  function initialize_testing() {
-
-    loadChai();
-
-    _BDD2['default'].tree.init();
-
-    _BDD2['default'].tests = {
-      currentStep: null
-    };
-
-    var features = [];
-
-    (function extractFeatures(tree) {
-      features = features.concat(tree.features);
-      tree.featureTrees.forEach(extractFeatures);
-    })(_BDD2['default'].tree);
-
-    var promise = new _BDD2['default'].$.Deferred();
-
-    _BDD2['default'].Feature.run(features).then(function () {
-      restoreAssertions();
-      promise.resolve();
-    }).fail(function () {
-      debugger;
-      promise.reject();
+    return BDD.Feature.run(features, function (feature) {
+      setTimeout(BDD.ui.printFeatureTestResults.bind(BDD.ui, feature), 0);
     });
-
-    return promise;
-  }
-
-  function loadChai() {
-    var assert = _BDD2['default'].chai.assert;
-    var expect = _BDD2['default'].chai.expect;
-
-    var newAssert = wrapMethod(assert);
-    var newExpect = wrapMethod(expect);
-
-    wrap(assert, newAssert);
-    wrap(expect, newExpect);
-
-    function wrap(originalClass, newClass) {
-      Object.keys(originalClass).forEach(function (key) {
-        var value = originalClass[key];
-        if (typeof value !== 'function') {
-          return;
-        }
-        newClass[key] = wrapMethod(value);
-      });
-    }
-
-    _BDD2['default'].assert = newAssert;
-    _BDD2['default'].expect = newExpect;
-
-    // chai.should is not exposed as a global for the same reasons described here:
-    // https://github.com/switchfly/ember-cli-mocha/issues/37#issuecomment-75460873
-    // window['should'] = wrapMethod('should');
-
-    // BDD.chai.config.includeStack = true;
-  }
-
-  function wrapMethod(fn) {
-    return function () {
-      var step = _BDD2['default'].activeStep;
-
-      if (!step) {
-        throw new Error('Assertions cannot be run outside of a scenario step.');
-      }
-
-      var assertion = fn.apply(_BDD2['default'].chai, arguments);
-      step.result.assertions.push(assertion);
-      return assertion;
-    };
-  }
-
-  var originalAssert = window.assert;
-  var originalExpect = window.expect;
-
-  function restoreAssertions() {
-    window.assert = originalAssert;
-    window.expect = originalExpect;
   }
 });
 
@@ -29752,10 +29756,179 @@ define('bdd/loaders/load-tests-amd', ['exports', 'module', 'BDD'], function (exp
   }
 });
 
-define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], function (exports, module, _BDD) {
+define("bdd/models/Example", ["exports", "module"], function (exports, module) {
+  module.exports = Example;
+
+  function Example(headers, data) {
+    this.headers = headers;
+
+    this.data = data;
+
+    // this.test = {
+    //   passed: true,
+    //   status: 'passed',
+    //   assertions: [],
+    //   log: [],
+    //   error: null
+    // };
+  }
+});
+
+define('bdd/models/Feature', ['exports', 'module', 'underscore', 'jquery', '../utils/each-series', '../Events', '../Filter', './feature-parser'], function (exports, module, _underscore, _jquery, _utilsEachSeries, _Events, _Filter, _featureParser) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _2 = _interopRequireDefault(_underscore);
+
+  var _$ = _interopRequireDefault(_jquery);
+
+  var _eachSeries = _interopRequireDefault(_utilsEachSeries);
+
+  var _Events2 = _interopRequireDefault(_Events);
+
+  var _filter = _interopRequireDefault(_Filter);
+
+  var _Parser = _interopRequireDefault(_featureParser);
+
+  module.exports = Feature;
+
+  function Feature() {
+    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+    _2['default'].extend(this, options);
+
+    this.scenarios = [];
+
+    this.tags = [];
+    this.result = {
+      status: 'passed',
+      passed: 0,
+      failed: 0,
+      total: 0,
+      elapsedTime: 0,
+      assertions: 0
+    };
+
+    // @todo: shouldn't a file be required every time?
+    if (this.file) {
+      this.init();
+    }
+
+    this.exclude = _filter['default'].shouldFilterOut('feature', this);
+    this.scenarios.forEach(function (scenario) {
+      scenario.applyFilters();
+    });
+  }
+
+  Feature.prototype.init = function init() {
+    if (typeof this.file !== 'string') {
+      throw new Error('Feature cannot be initialized without a feature file.');
+    }
+
+    new _Parser['default'](this);
+  };
+
+  Feature.prototype.run = function runFeature() {
+    var _this = this;
+
+    _Events2['default'].trigger('beforeFeature');
+
+    var promise = new _$['default'].Deferred();
+
+    var iterator = function iterator(scenario, callback) {
+      if (scenario.exclude) {
+        callback();
+        return;
+      }
+      scenario.run().always(callback);
+    };
+
+    _eachSeries['default'](this.scenarios, iterator).then(function () {
+
+      _this.scenarios.forEach(function (scenario) {
+        if (scenario.result.status === 'passed') {
+          _this.result.passed++;
+        } else {
+          _this.result.status = 'failed';
+          _this.result.failed++;
+        }
+        _this.result.total++;
+        _this.result.assertions += scenario.result.assertions;
+        _this.result.elapsedTime += scenario.result.elapsedTime;
+      });
+
+      promise.resolve();
+    });
+
+    var feature = this;
+    promise.then(function () {
+      _Events2['default'].trigger('afterFeature', feature);
+    });
+
+    return promise;
+  };
+
+  Feature.run = function runFeatures(features, featureCallback) {
+    featureCallback = featureCallback || function () {};
+
+    _Events2['default'].trigger('beforeFeatures');
+    var promise = new _$['default'].Deferred();
+    var result = {
+      status: 'passed',
+      elapsedTime: 0,
+      assertions: 0,
+      passed: 0,
+      failed: 0,
+      total: 0
+    };
+
+    var iterator = function iterator(feature, callback) {
+
+      if (feature.exclude) {
+        callback();
+        return;
+      }
+
+      feature.run().always(function () {
+        featureCallback(feature);
+        callback();
+      });
+    };
+
+    _eachSeries['default'](features, iterator, function () {
+      features.forEach(function (feature) {
+
+        if (feature.result.passed) {
+          result.passed++;
+        } else {
+          result.status = feature.result.status;
+          result.failed++;
+        }
+
+        result.elapsedTime += feature.result.elapsedTime;
+        result.assertions += feature.result.assertions;
+        result.total++;
+      });
+
+      _Events2['default'].trigger('afterFeatures', result);
+      promise.resolve(result);
+    });
+
+    return promise;
+  };
+});
+
+define('bdd/models/FeatureTree', ['exports', 'module', 'underscore', '../utils/index', './World', './Feature', './StepFunction', '../assertions'], function (exports, module, _underscore, _utilsIndex, _World, _Feature, _StepFunction, _assertions) {
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _2 = _interopRequireDefault(_underscore);
+
+  var _utils = _interopRequireDefault(_utilsIndex);
+
+  var _World2 = _interopRequireDefault(_World);
+
+  var _Feature2 = _interopRequireDefault(_Feature);
+
+  var _StepFunction2 = _interopRequireDefault(_StepFunction);
 
   module.exports = FeatureTree;
 
@@ -29815,7 +29988,7 @@ define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], func
    * @return {FeatureFle} A new or existing FeatureFile
    */
   fn.getFeatureTree = function getFeatureTree(featureTreeName) {
-    var featureTree = _BDD2['default']._.findWhere(this.featureTrees, { name: featureTreeName });
+    var featureTree = _2['default'].findWhere(this.featureTrees, { name: featureTreeName });
 
     if (!featureTree) {
       featureTree = new FeatureTree(featureTreeName, this);
@@ -29859,9 +30032,9 @@ define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], func
 
     stepLoaders.forEach(function (loadStepsFn) {
 
-      _BDD2['default'].utils.callWith(_this, loadStepsFn, {
-        assert: _BDD2['default'].assert,
-        expect: _BDD2['default'].expect,
+      _utils['default'].callWith(_this, loadStepsFn, {
+        assert: _assertions.assert,
+        expect: _assertions.expect,
         sinon: require('sinon')
       });
     });
@@ -29875,7 +30048,7 @@ define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], func
         return;
       }
 
-      var feature = new _BDD2['default'].Feature({
+      var feature = new _Feature2['default']({
         file: file,
         World: _this.World,
         module: _this.name,
@@ -29892,7 +30065,7 @@ define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], func
   };
 
   function registerStepFunction(type, step, fn, options) {
-    var stepFunction = new _BDD2['default'].StepFunction(step, fn, options);
+    var stepFunction = new _StepFunction2['default'](step, fn, options);
 
     this.stepFunctions[type].push(stepFunction);
   }
@@ -29918,22 +30091,30 @@ define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], func
       args[_key] = arguments[_key];
     }
 
+    this.createHooks('before', args);
+  };
+
+  FeatureTree.prototype.After = function () {
+    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
+    this.createHooks('after', args);
+  };
+
+  FeatureTree.prototype.createHooks = function (type, args) {
     var fn = args.pop();
     if (args.length) {
-      this.worldPrototype.beforeTags.push({
+      this.worldPrototype[type + 'Tags'].push({
         tags: args.map(function (str) {
           return str.replace(/@/g, '');
         }),
         fn: fn
       });
     } else {
-      this.worldPrototype.beforeEach = fn;
+      this.worldPrototype[type + 'Each'] = fn;
     }
-    fn.isAsync = _BDD2['default'].utils.isAsync(fn);
-  };
-
-  FeatureTree.prototype.After = function (fn) {
-    this.worldPrototype.afterEach = fn;
+    fn.isAsync = _utils['default'].isAsync(fn);
   };
 
   FeatureTree.prototype.prepareWorld = function () {
@@ -29942,143 +30123,732 @@ define('bdd/models/feature-tree/FeatureTree', ['exports', 'module', 'BDD'], func
     }
 
     var ParentWorld = this.parent ? this.parent.World : null;
-    this.World = _BDD2['default'].World.create(this.worldPrototype, this.stepFunctions, ParentWorld);
+    this.World = _World2['default'].create(this.worldPrototype, this.stepFunctions, ParentWorld);
+  };
+
+  FeatureTree.prototype.getFeatures = function () {
+    var features = [];
+
+    (function extractFeatures(tree) {
+      features = features.concat(tree.features);
+      tree.featureTrees.forEach(extractFeatures);
+    })(this);
+
+    return features;
   };
 });
 
-define('bdd/models/feature/Feature', ['exports', 'module', 'underscore', 'jquery', '../../utils/each-series', '../../Events', '../../Filter', './parser', 'BDD'], function (exports, module, _underscore, _jquery, _utilsEachSeries, _Events, _Filter, _parser, _BDD) {
+define('bdd/models/Scenario', ['exports', 'module', 'jquery', 'underscore', '../Events', '../Filter', './Test', '../utils/each-series'], function (exports, module, _jquery, _underscore, _Events, _Filter, _Test, _utilsEachSeries) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _2 = _interopRequireDefault(_underscore);
 
   var _$ = _interopRequireDefault(_jquery);
 
-  var _eachSeries = _interopRequireDefault(_utilsEachSeries);
+  var _2 = _interopRequireDefault(_underscore);
 
   var _Events2 = _interopRequireDefault(_Events);
 
   var _filter = _interopRequireDefault(_Filter);
 
-  var _Parser = _interopRequireDefault(_parser);
+  var _Test2 = _interopRequireDefault(_Test);
 
-  // import ui from '../../ui/index';
+  var _eachSeries = _interopRequireDefault(_utilsEachSeries);
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  module.exports = Scenario;
 
-  module.exports = Feature;
-
-  function Feature() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
+  function Scenario(feature, options) {
     _2['default'].extend(this, options);
 
-    this.scenarios = [];
+    this.feature = feature;
+    this.World = feature.World;
+    this.steps = [];
+    this.given = [];
+    this.when = [];
+    this.then = [];
+    this.tests = [];
+    this.examples = [];
+    this.elapsedTime = 0;
 
-    this.tags = [];
     this.result = {
       status: 'passed',
+      elapsedTime: 0,
+      assertions: 0,
       passed: 0,
       failed: 0,
-      total: 0,
-      elapsedTime: 0
+      total: 0
     };
-
-    // @todo: shouldn't a file be required every time?
-    if (this.file) {
-      this.init();
-    }
-
-    this.exclude = _filter['default'].shouldFilterOut('feature', this);
-    this.scenarios.forEach(function (scenario) {
-      scenario.applyFilters();
-    });
   }
 
-  Feature.prototype.init = function init() {
-    if (typeof this.file !== 'string') {
-      throw new Error('Feature cannot be initialized without a feature file.');
-    }
+  var fn = Scenario.prototype;
 
-    new _Parser['default'](this);
+  fn.applyFilters = function () {
+    this.exclude = this.feature.exclude || _filter['default'].shouldFilterOut('scenario', this);
   };
 
-  Feature.prototype.run = function runFeature() {
+  fn.run = function runScenario() {
     var _this = this;
 
-    _Events2['default'].trigger('beforeFeature');
+    _Events2['default'].trigger('beforeScenario', this);
 
     var promise = new _$['default'].Deferred();
 
-    var iterator = function iterator(scenario, callback) {
-      if (scenario.exclude) {
-        callback();
-        return;
-      }
-      scenario.run().always(callback);
-    };
+    if (!this.examples.length) {
+      this.tests.push(new _Test2['default'](this));
+    } else {
+      this.examples.forEach(function (example) {
+        _this.tests.push(new _Test2['default'](_this, example));
+      });
+    }
 
-    _eachSeries['default'](this.scenarios, iterator).then(function () {
+    _eachSeries['default'](this.tests, function (test, callback) {
+      test.run().always(callback);
+    }).then(function () {
 
-      _this.scenarios.forEach(function (scenario) {
-        if (scenario.result.status === 'passed') {
+      _this.tests.forEach(function (test) {
+
+        if (test.result.passed) {
           _this.result.passed++;
         } else {
-          _this.result.status = 'failed';
+          _this.result.status = test.result.status;
           _this.result.failed++;
         }
+
+        _this.elapsedTime += test.result.elapsedTime;
+        _this.result.elapsedTime += test.result.elapsedTime;
+        _this.result.assertions += test.result.assertions;
         _this.result.total++;
-        _this.result.elapsedTime += scenario.result.elapsedTime;
       });
-
+      _Events2['default'].trigger('afterScenario', _this);
       promise.resolve();
-    });
-
-    var feature = this;
-    promise.then(function () {
-      _Events2['default'].trigger('afterFeature', feature);
     });
 
     return promise;
   };
 
-  Feature.run = function runFeatures(features) {
-    _Events2['default'].trigger('beforeFeatures');
-    var promise = new _$['default'].Deferred();
+  fn.generateMissingStepDefinitions = function generateMissingStepDefinitions() {
+    var definitions = [];
 
-    var iterator = function iterator(feature, callback) {
+    this.steps.forEach(function (step) {
+      if (step.result.status === 'missing') {
+        definitions.push(step.generateDefinition());
+      }
+    });
 
-      if (feature.exclude) {
-        callback();
+    return definitions.join('\n');
+  };
+});
+
+define('bdd/models/StepFunction', ['exports', 'module', 'underscore', '../utils/index'], function (exports, module, _underscore, _utilsIndex) {
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _2 = _interopRequireDefault(_underscore);
+
+  var _utils = _interopRequireDefault(_utilsIndex);
+
+  module.exports = StepFunction;
+
+  function StepFunction(stepName, fn) {
+    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+    _2['default'].extend(this, options);
+
+    this.stepName = stepName;
+    this.fn = fn || function () {};
+    this.regex = this.createRegex();
+
+    this.extractAssertions();
+
+    this.isAsync = !!fn.toString().match(/function[^\)]+done\s*\)/);
+  }
+
+  var fn = StepFunction.prototype;
+
+  fn.createRegex = function () {
+    var step = this.stepName;
+    var isRegex = false;
+    var variableRegex = /\$\{[^\}]+\}/g;
+    var regex;
+
+    if (step instanceof RegExp) {
+      isRegex = true;
+      regex = step;
+    } else if (step.match(variableRegex)) {
+      regex = new RegExp('^' + step.replace(variableRegex, '(.+)') + '$', 'i');
+      isRegex = true;
+    } else {
+      regex = new RegExp('^' + step + '$', 'i');
+    }
+
+    return regex;
+  };
+
+  fn.getArgumentsObject = function (stepRecord) {
+    var variableValues = this.getVariableValues(stepRecord);
+
+    if (!this.variableNames) {
+      this.variableNames = this.getVariableNames();
+    }
+
+    var variableNames = this.variableNames;
+
+    var argsObject = {};
+
+    for (var i = 0; i < variableNames.length; i++) {
+      argsObject[variableNames[i]] = variableValues[i];
+    }
+
+    return argsObject;
+  };
+
+  fn.getVariableNames = function () {
+    var variableNames = [];
+    var regex = /\$\{([^\}]+)\}/g;
+    var match;
+    while (match = regex.exec(this.stepName)) {
+      variableNames.push(match[1]);
+    }
+
+    return variableNames;
+  };
+
+  fn.getVariableValues = function (stepRecord) {
+    var match = stepRecord.name.match(this.regex);
+    if (!match) {
+      throw new Error('stepFunction was given a mismatched stepRecord');
+    }
+
+    var args = [];
+    var i, value;
+
+    for (i = 1; i < match.length; i++) {
+      value = match[i];
+      value = _utils['default'].smartTypeCast(value);
+      args.push(value);
+    }
+
+    if (stepRecord.table) {
+      args.push(stepRecord.table);
+    }
+
+    return args;
+  };
+
+  fn.extractAssertions = function extractAssertions() {
+    var str = this.fn.toString();
+    var regex = /\s*((expect|assert)[\(\.][^;]+;)/g;
+    var match;
+
+    str = _utils['default'].stripComments(str);
+
+    this.assertions = [];
+    while (match = regex.exec(str)) {
+      var assertion = _utils['default'].htmlEscape(match[1].trim());
+      this.assertions.push(assertion);
+    }
+    return this.assertions;
+  };
+});
+
+define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'underscore', '../utils/index'], function (exports, module, _BDD, _jquery, _underscore, _utilsIndex) {
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _BDD2 = _interopRequireDefault(_BDD);
+
+  var _$ = _interopRequireDefault(_jquery);
+
+  var _2 = _interopRequireDefault(_underscore);
+
+  var _utils = _interopRequireDefault(_utilsIndex);
+
+  module.exports = StepRecord;
+
+  function StepRecord(defintion) {
+    this.prefix = defintion.prefix;
+    this.type = defintion.type;
+    this.name = defintion.name;
+    this.tags = [];
+  }
+
+  StepRecord.prototype.init = function init(world) {
+    this.world = world;
+
+    var stepFunction = world._getStepFunction(this);
+
+    this.stepFunction = stepFunction ? stepFunction : 'missing';
+
+    return this;
+  };
+
+  StepRecord.prototype.initializeTesting = function () {
+    this.result = {
+      log: [],
+      error: null,
+      assertions: [],
+      passed: false,
+      status: 'passed'
+    };
+  };
+
+  StepRecord.prototype.run = function runStep(exampleData) {
+    var _this = this,
+        _arguments = arguments;
+
+    this.initializeTesting();
+
+    var calledCallback = false;
+    var delay = this.stepFunction.wait || 1000;
+    var promise = _utils['default'].promises.create('Step promise failed to resolve within ' + delay + 'ms', delay + 1);
+    var noCallbackTimer;
+
+    var _callback = _2['default'].once(function (error) {
+      clearTimeout(noCallbackTimer);
+      calledCallback = true;
+
+      _this.log(_this.stepFunction.assertions);
+
+      if (error) {
+        _this.log(error);
+      } else if (_utils['default'].tryCatch.justThrewError) {
+        onStepError(_utils['default'].tryCatch.uncaughtError);
         return;
       }
 
-      feature.run().then(function () {
-        // Wrap in a timeout to prevent crashes from ui rendering errors
-        setTimeout(_BDD2['default'].ui.printFeatureTestResults.bind(_BDD2['default'].ui, feature), 0);
-        callback();
-      }).fail(function () {
-        debugger; /* jshint ignore:line */
+      if (_this.type === 'Then' && !_this.result.error && !_this.result.assertions.length) {
+        var thenError = new Error('"Then" step definitions must contain at least one assertion.');
+        thenError.stack = '';
+        _this.log(thenError);
+      }
+
+      if (_this.result.error) {
+        promise.reject(error);
+      } else {
+        _this.result.passed = true;
+        _this.result.status = 'passed';
+        promise.resolve();
+      }
+    });
+
+    var failCallback = _2['default'].once(function (response) {
+      clearTimeout(noCallbackTimer);
+      _this.result.status = 'failed';
+      _this.log(response);
+      if (promise.state() === 'pending') {
+        promise.reject(response);
+      }
+    });
+
+    promise.fail(failCallback);
+
+    _BDD2['default'].activeStep = this;
+
+    var self = this;
+
+    function onStepError(e) {
+      var error = new Error();
+      error.name = e.name;
+      error.message = _utils['default'].htmlEscape(e.message);
+      error.stack = e.stack;
+      error.stackArray = _utils['default'].printStack(e);
+      self.log(error);
+      failCallback();
+    }
+
+    _BDD2['default'].activeStepPromise = new _$['default'].Deferred();
+    _BDD2['default'].activeStepPromise.fail(onStepError);
+    promise.always(function () {
+      _BDD2['default'].activeStepPromise = null;
+    });
+
+    setTimeout(function () {
+      _utils['default'].tryCatch(function () {
+        var argsObject = _this.stepFunction.getArgumentsObject(_this);
+
+        _2['default'].extend(argsObject, exampleData, {
+          'done|callback': _callback,
+          '_super': function _super() {
+            var stepFunction = _this.world._parentWorld._getStepFunction(_this);
+            if (stepFunction) {
+              return stepFunction.fn.apply(_this.world, _arguments);
+            }
+          }
+        });
+
+        if (_this.table) {
+          argsObject._extras = [_this.table];
+        }
+
+        _utils['default'].tryCatch.reset();
+        var response = _utils['default'].callWith(_this.world, _this.stepFunction.fn, argsObject);
+
+        var didReturnPromise = _utils['default'].promises.isPromise(response);
+
+        if (!calledCallback && (didReturnPromise || _this.stepFunction.isAsync)) {
+          noCallbackTimer = setTimeout(function () {
+            failCallback('Step function promise did not resolve within ' + delay + 'ms');
+          }, delay);
+
+          if (didReturnPromise) {
+            response.then(_callback, failCallback);
+          }
+        } else {
+          _callback();
+        }
+      }, onStepError);
+    });
+
+    // if (BDD.queryParams.notrycatch) {
+    if (_utils['default'].queryParams('notrycatch')) {
+      setTimeout(function () {
+        if (_utils['default'].tryCatch.justThrewError) {
+          onStepError(_utils['default'].tryCatch.uncaughtError);
+        }
       });
+    }
+
+    return promise;
+  };
+
+  StepRecord.prototype.logMissing = function logMissingStep() {
+    this.initializeTesting();
+    this.result.missing = true;
+    this.result.status = 'missing';
+    this.log('MISSING STEP FUNCTION');
+  };
+
+  StepRecord.prototype.skip = function skipStep() {
+    if (this.stepFunction === 'missing') {
+      this.logMissing();
+    } else {
+      this.initializeTesting();
+      this.result.status = 'skipped';
+      this.log('SKIPPED STEP');
+    }
+  };
+
+  StepRecord.prototype.log = function logTestResult(entry) {
+    if (!entry) {
+      return;
+    }
+    if (entry instanceof Error) {
+      if (console.error && entry.stack) {
+        console.error(entry.stack);
+      }
+
+      this.result.error = entry;
+      this.result.status = 'failed';
+      this.result.passed = false;
+    }
+
+    this.result.log = this.result.log.concat(entry);
+  };
+
+  StepRecord.prototype.addAssertion = function addAssertion(assertion) {
+    this.result.assertions.push(assertion);
+  };
+
+  StepRecord.prototype.generateDefinition = function generateDefinition() {
+    var description = this.name.replace(/'/g, '\\\'');
+    return 'this.' + this.type + '(\'' + description + '\', function() {});';
+  };
+});
+
+define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '../utils/each-series'], function (exports, module, _BDD, _jquery, _Events, _utilsEachSeries) {
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _BDD2 = _interopRequireDefault(_BDD);
+
+  var _$ = _interopRequireDefault(_jquery);
+
+  var _Events2 = _interopRequireDefault(_Events);
+
+  var _eachSeries = _interopRequireDefault(_utilsEachSeries);
+
+  module.exports = Test;
+
+  function Test(scenario, example) {
+    this.scenario = scenario;
+    this.World = scenario.feature.World;
+    this.steps = scenario.steps;
+    this.skip = scenario.skip;
+    this.given = scenario.given;
+    this.tags = scenario.tags;
+    this.example = example || {};
+
+    this.result = {
+      passed: true,
+      status: 'passed',
+      error: null,
+      failedStep: null,
+      elapsedTime: 0,
+      assertions: 0
     };
 
-    _eachSeries['default'](features, iterator, promise.resolve);
+    this.example.result = this.result;
+  }
 
-    promise.then(function () {
-      _Events2['default'].trigger('afterFeatures');
+  var fn = Test.prototype;
+
+  fn.run = function () {
+    var _this = this;
+
+    _Events2['default'].trigger('beforeTest');
+
+    var promise = new _$['default'].Deferred();
+
+    if (this.skip || this.given.length === 0) {
+      this.result.passed = false;
+      this.result.status = this.skip ? 'skipped' : 'pending';
+      this.elapsedTime = 'skipped';
+      promise.reject();
+      return promise;
+    }
+
+    this.runSteps().always(function () {
+      promise.resolve();
+      _Events2['default'].trigger('afterTest', _this);
     });
+
+    return promise;
+  };
+
+  fn.runSteps = function () {
+    var _this2 = this;
+
+    var promise = new _$['default'].Deferred();
+
+    var startTime = Date.now();
+
+    var world = new this.World();
+
+    world._init(this).then(function () {
+      _this2.steps.forEach(function (step) {
+        step.init(world);
+      });
+
+      _eachSeries['default'](_this2.steps, function (step, callback) {
+        _this2.runStep(step).always(function (response) {
+          _this2.result.assertions += step.result.assertions.length;
+          callback(response);
+        });
+      }).then(function () {
+        _BDD2['default'].activeStep = null;
+        _this2.result.elapsedTime = Date.now() - startTime;
+        world._destroy().then(promise.resolve);
+      });
+    });
+
+    return promise;
+  };
+
+  fn.runStep = function (step) {
+    var _this3 = this;
+
+    var promise = new _$['default'].Deferred();
+
+    this.lastStep = step;
+    _BDD2['default'].activeStep = null;
+
+    if (!this.result.passed) {
+      step.skip();
+      promise.resolve();
+    } else if (step.stepFunction === 'missing') {
+      this.result.passed = false;
+      this.result.status = 'missing';
+      this.result.failedStep = step;
+      step.logMissing();
+      promise.resolve();
+    } else {
+      step.run(this.example.data).done(promise.resolve).fail(function () {
+        _this3.result.passed = false;
+        _this3.result.failedStep = step;
+        _this3.result.error = step.result.error;
+        _this3.result.status = step.result.status;
+        promise.reject();
+      });
+    }
 
     return promise;
   };
 });
 
-define('bdd/models/feature/parser', ['exports', 'module', '../scenario/Scenario', '../scenario/Example', '../step/StepRecord', '../../utils/smartTypeCast'], function (exports, module, _scenarioScenario, _scenarioExample, _stepStepRecord, _utilsSmartTypeCast) {
+define("bdd/models/Universe", ["exports", "module"], function (exports, module) {
+  module.exports = Universe;
+
+  function Universe() {}
+});
+
+define('bdd/models/World', ['exports', 'module', 'jquery', 'underscore', '../utils/index'], function (exports, module, _jquery, _underscore, _utilsIndex) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _Scenario = _interopRequireDefault(_scenarioScenario);
+  var _$ = _interopRequireDefault(_jquery);
 
-  var _Example = _interopRequireDefault(_scenarioExample);
+  var _2 = _interopRequireDefault(_underscore);
 
-  var _StepRecord = _interopRequireDefault(_stepStepRecord);
+  var _utils = _interopRequireDefault(_utilsIndex);
+
+  module.exports = World;
+
+  function World() {}
+
+  World.prototype = {
+
+    constructor: World,
+
+    _init: function _init(scenario) {
+      this.activeScenario = scenario;
+      return this._invokeHooks('before');
+    },
+
+    _beforeEach: function _beforeEach(callback) {
+      callback();
+    },
+
+    _afterEach: function _afterEach(callback) {
+      callback();
+    },
+
+    _destroy: function _destroy() {
+      return this._invokeHooks('after');
+    },
+
+    _invokeHooks: function _invokeHooks(hook) {
+      var promise = new _$['default'].Deferred();
+
+      var hooks = this.getTaggedHooks(this.activeScenario.tags, hook);
+      var eachFnName = '_' + hook + 'Each';
+
+      hooks.unshift(this[eachFnName]);
+
+      var self = this;
+      _utils['default'].eachSeries(hooks, function (fn, callback) {
+
+        _utils['default'].callWith(self, fn, {
+          parent: self._parentWorld[eachFnName],
+          'done|callback': callback,
+          before: function before() {
+            self._parentWorld.beforeEach.apply(self, arguments);
+          },
+          after: function after() {
+            self._parentWorld.afterEach.apply(self, arguments);
+          }
+        });
+
+        if (!fn.isAsync) {
+          callback();
+        }
+      }, promise.resolve);
+
+      return promise;
+    }
+  };
+
+  World.prototype._getStepFunction = function getStepFunction(stepRecord) {
+    var stepFunctions = this._stepFunctions[stepRecord.type];
+    var stepFunction, match, i;
+
+    for (i = 0; i < stepFunctions.length; i++) {
+      stepFunction = stepFunctions[i];
+      match = stepRecord.name.match(stepFunction.regex);
+      if (match) {
+        break;
+      }
+    }
+
+    if (match) {
+      return stepFunction;
+    } else if (this._parentWorld) {
+      return this._parentWorld._getStepFunction(stepRecord);
+    }
+  };
+
+  World.create = function create(prototype, stepFunctions, ParentWorld) {
+
+    var constructor = prototype.constructor = prototype._constructor || function () {};
+    var proto;
+
+    if (ParentWorld) {
+      proto = prototype._parentWorld = new ParentWorld();
+    } else {
+      proto = new World();
+    }
+
+    prototype = _2['default'].extend({}, proto, prototype);
+
+    prototype._stepFunctions = stepFunctions;
+    prototype._super = prototype;
+
+    constructor.prototype = prototype;
+
+    if (prototype.beforeEach) {
+      if (typeof prototype.beforeEach !== 'function') {
+        throw new Error('beforeEach must be a function');
+      }
+
+      prototype.beforeEach.isAsync = _utils['default'].isAsync(prototype.beforeEach);
+
+      prototype._beforeEach = prototype.beforeEach;
+    }
+
+    if (prototype.afterEach) {
+      if (typeof prototype.afterEach !== 'function') {
+        throw new Error('afterEach must be a function');
+      }
+
+      prototype.afterEach.isAsync = _utils['default'].isAsync(prototype.afterEach);
+
+      prototype._afterEach = prototype.afterEach;
+    }
+
+    return constructor;
+  };
+
+  World.prototype.getTaggedHooks = function (tags, hookType) {
+    if (!tags.length) {
+      return [];
+    }
+
+    var fns = [];
+    var world = this;
+
+    while (world) {
+      fns = fns.concat(world[hookType + 'Tags']);
+      world = world._parentWorld;
+    }
+
+    if (!fns.length) {
+      return [];
+    }
+
+    var matchedFns = [];
+
+    fns.forEach(function (item) {
+      for (var i = 0; i < item.tags.length; i++) {
+        var tag = item.tags[i];
+        tag = tag.split(/,\s*/);
+        if (tag.length === 1) {
+          if (tags.indexOf(tag[0]) === -1) {
+            return;
+          }
+        } else {
+          if (!_2['default'].intersection(tags, tag).length) {
+            return;
+          }
+        }
+      }
+      matchedFns.push(item.fn);
+    });
+
+    return matchedFns;
+  };
+});
+
+define('bdd/models/feature-parser', ['exports', 'module', './Scenario', './Example', './StepRecord', '../utils/smartTypeCast'], function (exports, module, _Scenario, _Example, _StepRecord, _utilsSmartTypeCast) {
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _Scenario2 = _interopRequireDefault(_Scenario);
+
+  var _Example2 = _interopRequireDefault(_Example);
+
+  var _StepRecord2 = _interopRequireDefault(_StepRecord);
 
   var _smartTypeCast = _interopRequireDefault(_utilsSmartTypeCast);
 
@@ -30163,7 +30933,7 @@ define('bdd/models/feature/parser', ['exports', 'module', '../scenario/Scenario'
 
   fn.process.scenario_start = function () {
     var tags = this.emptyTags();
-    var scenario = new _Scenario['default'](this.feature, {
+    var scenario = new _Scenario2['default'](this.feature, {
       tags: tags,
       skip: !!tags.join().match(/\b(skip|ignore)\b/),
       name: this.active.line.match(/scenario: *(.*)/i)[1]
@@ -30177,7 +30947,7 @@ define('bdd/models/feature/parser', ['exports', 'module', '../scenario/Scenario'
   fn.process.Given = function () {
     var regex = new RegExp('^(' + this.active.lineType + '|and|but) *(.*)', 'i');
     var match = this.active.line.match(regex);
-    var step = new _StepRecord['default']({
+    var step = new _StepRecord2['default']({
       type: this.active.lineType,
       name: match[2],
       prefix: match[1]
@@ -30254,719 +31024,10 @@ define('bdd/models/feature/parser', ['exports', 'module', '../scenario/Scenario'
       return data[header] = cells[i];
     });
 
-    var row = tableFor.examples ? new _Example['default'](tableFor.headers, data) : data;
+    var row = tableFor.examples ? new _Example2['default'](tableFor.headers, data) : data;
     tableFor.push(row);
     tableFor.last = row;
     return row;
-  }
-});
-
-define("bdd/models/scenario/Example", ["exports", "module"], function (exports, module) {
-  module.exports = Example;
-
-  function Example(headers, data) {
-    this.headers = headers;
-
-    this.data = data;
-
-    // this.test = {
-    //   passed: true,
-    //   status: 'passed',
-    //   assertions: [],
-    //   log: [],
-    //   error: null
-    // };
-  }
-});
-
-define('bdd/models/scenario/Scenario', ['exports', 'module', 'jquery', 'underscore', '../../Events', '../../Filter', './Test', '../../utils/each-series'], function (exports, module, _jquery, _underscore, _Events, _Filter, _Test, _utilsEachSeries) {
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _$ = _interopRequireDefault(_jquery);
-
-  var _2 = _interopRequireDefault(_underscore);
-
-  var _Events2 = _interopRequireDefault(_Events);
-
-  var _filter = _interopRequireDefault(_Filter);
-
-  var _Test2 = _interopRequireDefault(_Test);
-
-  var _eachSeries = _interopRequireDefault(_utilsEachSeries);
-
-  module.exports = Scenario;
-
-  function Scenario(feature, options) {
-    _2['default'].extend(this, options);
-
-    this.feature = feature;
-    this.World = feature.World;
-    this.steps = [];
-    this.given = [];
-    this.when = [];
-    this.then = [];
-    this.tests = [];
-    this.examples = [];
-    this.elapsedTime = 0;
-
-    this.result = {
-      status: 'passed'
-    };
-  }
-
-  var fn = Scenario.prototype;
-
-  fn.applyFilters = function () {
-    this.exclude = this.feature.exclude || _filter['default'].shouldFilterOut('scenario', this);
-  };
-
-  fn.run = function runScenario() {
-    var _this = this;
-
-    _Events2['default'].trigger('beforeScenario', this);
-
-    var promise = new _$['default'].Deferred();
-
-    if (!this.examples.length) {
-      this.tests.push(new _Test2['default'](this));
-    } else {
-      this.examples.forEach(function (example) {
-        _this.tests.push(new _Test2['default'](_this, example));
-      });
-    }
-
-    _eachSeries['default'](this.tests, function (test, callback) {
-      test.run().always(callback);
-    }).then(function () {
-      _this.result.passed = 0;
-      _this.result.failed = 0;
-      _this.result.total = 0;
-      _this.tests.forEach(function (test) {
-
-        if (test.result.passed) {
-          _this.result.passed++;
-        } else {
-          _this.result.status = test.result.status;
-          _this.result.failed++;
-        }
-
-        _this.elapsedTime += test.result.elapsedTime;
-        _this.result.total++;
-      });
-      _Events2['default'].trigger('afterScenario', _this);
-      promise.resolve();
-    });
-
-    return promise;
-  };
-
-  fn.generateMissingStepDefinitions = function generateMissingStepDefinitions() {
-    var definitions = [];
-
-    this.steps.forEach(function (step) {
-      if (step.tests.status === 'missing') {
-        definitions.push(step.generateDefinition());
-      }
-    });
-
-    return definitions.join('\n');
-  };
-});
-
-define('bdd/models/scenario/Test', ['exports', 'module', 'BDD', 'jquery', '../../Events', '../../utils/each-series'], function (exports, module, _BDD, _jquery, _Events, _utilsEachSeries) {
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _BDD2 = _interopRequireDefault(_BDD);
-
-  var _$ = _interopRequireDefault(_jquery);
-
-  var _Events2 = _interopRequireDefault(_Events);
-
-  var _eachSeries = _interopRequireDefault(_utilsEachSeries);
-
-  module.exports = Test;
-
-  function Test(scenario, example) {
-    this.scenario = scenario;
-    this.World = scenario.feature.World;
-    this.steps = scenario.steps;
-    this.skip = scenario.skip;
-    this.given = scenario.given;
-    this.tags = scenario.tags;
-    this.example = example || {};
-
-    this.result = {
-      passed: true,
-      status: 'passed',
-      error: null,
-      failedStep: null,
-      elapsedTime: 0
-    };
-
-    this.example.result = this.result;
-  }
-
-  var fn = Test.prototype;
-
-  fn.run = function () {
-    var _this = this;
-
-    _Events2['default'].trigger('beforeTest');
-
-    var promise = new _$['default'].Deferred();
-
-    if (this.skip || this.given.length === 0) {
-      this.result.passed = false;
-      this.result.status = this.skip ? 'skipped' : 'pending';
-      this.elapsedTime = 'skipped';
-      promise.reject();
-      return promise;
-    }
-
-    this.runSteps().always(function () {
-      promise.resolve();
-      _Events2['default'].trigger('afterTest', _this);
-    });
-
-    return promise;
-  };
-
-  fn.runSteps = function () {
-    var _this2 = this;
-
-    var promise = new _$['default'].Deferred();
-
-    var startTime = Date.now();
-
-    var world = new this.World();
-
-    world._init(this).then(function () {
-      _this2.steps.forEach(function (step) {
-        step.init(world);
-      });
-
-      _eachSeries['default'](_this2.steps, function (step, callback) {
-        _this2.runStep(step).always(function (response) {
-          return callback(response);
-        });
-      }).then(function () {
-        _BDD2['default'].activeStep = null;
-        _this2.result.elapsedTime = Date.now() - startTime;
-        world._destroy().then(promise.resolve);
-      });
-    });
-
-    return promise;
-  };
-
-  fn.runStep = function (step) {
-    var _this3 = this;
-
-    var promise = new _$['default'].Deferred();
-
-    this.lastStep = step;
-    _BDD2['default'].activeStep = null;
-
-    if (!this.result.passed) {
-      step.skip();
-      promise.resolve();
-    } else if (step.stepFunction === 'missing') {
-      this.result.passed = false;
-      this.result.status = 'missing';
-      this.result.failedStep = step;
-      step.logMissing();
-      promise.resolve();
-    } else {
-      step.run(this.example.data).done(promise.resolve).fail(function () {
-        _this3.result.passed = false;
-        _this3.result.failedStep = step;
-        _this3.result.error = step.result.error;
-        _this3.result.status = step.result.status;
-        promise.reject();
-      });
-    }
-
-    return promise;
-  };
-});
-
-define('bdd/models/step/StepFunction', ['exports', 'module', 'BDD'], function (exports, module, _BDD) {
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _BDD2 = _interopRequireDefault(_BDD);
-
-  module.exports = StepFunction;
-
-  function StepFunction(stepName, fn) {
-    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
-
-    _BDD2['default']._.extend(this, options);
-
-    this.stepName = stepName;
-    this.fn = fn || function () {};
-    this.regex = this.createRegex();
-
-    this.extractAssertions();
-
-    this.isAsync = !!fn.toString().match(/function[^\)]+done\s*\)/);
-  }
-
-  var fn = StepFunction.prototype;
-
-  fn.createRegex = function () {
-    var step = this.stepName;
-    var isRegex = false;
-    var variableRegex = /\$\{[^\}]+\}/g;
-    var regex;
-
-    if (step instanceof RegExp) {
-      isRegex = true;
-      regex = step;
-    } else if (step.match(variableRegex)) {
-      regex = new RegExp('^' + step.replace(variableRegex, '(.+)') + '$', 'i');
-      isRegex = true;
-    } else {
-      regex = new RegExp('^' + step + '$', 'i');
-    }
-
-    return regex;
-  };
-
-  fn.getArgumentsObject = function (stepRecord) {
-    var variableValues = this.getVariableValues(stepRecord);
-
-    if (!this.variableNames) {
-      this.variableNames = this.getVariableNames();
-    }
-
-    var variableNames = this.variableNames;
-
-    var argsObject = {};
-
-    for (var i = 0; i < variableNames.length; i++) {
-      argsObject[variableNames[i]] = variableValues[i];
-    }
-
-    return argsObject;
-  };
-
-  fn.getVariableNames = function () {
-    var variableNames = [];
-    var regex = /\$\{([^\}]+)\}/g;
-    var match;
-    while (match = regex.exec(this.stepName)) {
-      variableNames.push(match[1]);
-    }
-
-    return variableNames;
-  };
-
-  fn.getVariableValues = function (stepRecord) {
-    var match = stepRecord.name.match(this.regex);
-    if (!match) {
-      throw new Error('stepFunction was given a mismatched stepRecord');
-    }
-
-    var args = [];
-    var i, value;
-
-    for (i = 1; i < match.length; i++) {
-      value = match[i];
-      value = _BDD2['default'].utils.smartTypeCast(value);
-      args.push(value);
-    }
-
-    if (stepRecord.table) {
-      args.push(stepRecord.table);
-    }
-
-    return args;
-  };
-
-  fn.extractAssertions = function extractAssertions() {
-    var str = this.fn.toString();
-    var regex = /\s*((expect|assert)[\(\.][^;]+;)/g;
-    var match;
-
-    str = _BDD2['default'].utils.stripComments(str);
-
-    this.assertions = [];
-    while (match = regex.exec(str)) {
-      var assertion = _BDD2['default'].utils.htmlEscape(match[1].trim());
-      this.assertions.push(assertion);
-    }
-    return this.assertions;
-  };
-});
-
-define('bdd/models/step/StepRecord', ['exports', 'module', 'BDD'], function (exports, module, _BDD) {
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _BDD2 = _interopRequireDefault(_BDD);
-
-  module.exports = StepRecord;
-
-  function StepRecord(defintion) {
-    this.prefix = defintion.prefix;
-    this.type = defintion.type;
-    this.name = defintion.name;
-    this.tags = [];
-  }
-
-  StepRecord.prototype.init = function init(world) {
-    this.world = world;
-
-    var stepFunction = world._getStepFunction(this);
-
-    this.stepFunction = stepFunction ? stepFunction : 'missing';
-
-    return this;
-  };
-
-  StepRecord.prototype.initializeTesting = function () {
-    this.result = {
-      log: [],
-      error: null,
-      assertions: [],
-      passed: false,
-      status: 'passed'
-    };
-  };
-
-  StepRecord.prototype.run = function runStep(exampleData) {
-    var _this = this;
-
-    this.initializeTesting();
-
-    var calledCallback = false;
-    var delay = this.stepFunction.wait || _BDD2['default'].CONFIGS.promiseTimeout;
-    var promise = _BDD2['default'].utils.promises.create('Step promise failed to resolve within ' + delay + 'ms', delay + 1);
-    var noCallbackTimer;
-
-    var _callback = _BDD2['default']._.once(function (error) {
-      clearTimeout(noCallbackTimer);
-      calledCallback = true;
-
-      _this.log(_this.stepFunction.assertions);
-
-      if (error) {
-        _this.log(error);
-      }
-
-      if (_this.type === 'Then' && !_this.result.error && !_this.result.assertions.length) {
-        var thenError = new Error('"Then" step definitions must contain at least one assertion.');
-        thenError.stack = '';
-        _this.log(thenError);
-      }
-
-      if (_this.result.error) {
-        promise.reject(error);
-      } else {
-        _this.result.passed = true;
-        _this.result.status = 'passed';
-        promise.resolve();
-      }
-    });
-
-    var failCallback = _BDD2['default']._.once(function (response) {
-      clearTimeout(noCallbackTimer);
-      _this.result.status = 'failed';
-      _this.log(response);
-      if (promise.state() === 'pending') {
-        promise.reject(response);
-      }
-    });
-
-    promise.fail(failCallback);
-
-    _BDD2['default'].activeStep = this;
-
-    var self = this;
-
-    function onStepError(e) {
-      var error = new Error();
-      error.name = e.name;
-      error.message = _BDD2['default'].utils.htmlEscape(e.message);
-      error.stack = e.stack;
-      error.stackArray = _BDD2['default'].utils.printStack(e);
-      self.log(error);
-      failCallback();
-    }
-
-    _BDD2['default'].activeStepPromise = new _BDD2['default'].$.Deferred();
-    _BDD2['default'].activeStepPromise.fail(onStepError);
-    promise.always(function () {
-      _BDD2['default'].activeStepPromise = null;
-    });
-
-    setTimeout(function () {
-      _BDD2['default'].utils.tryCatch(function () {
-        var argsObject = _this.stepFunction.getArgumentsObject(_this);
-
-        _BDD2['default']._.extend(argsObject, exampleData, {
-          'done|callback': _callback
-        });
-
-        if (_this.table) {
-          argsObject._extras = [_this.table];
-        }
-
-        var response = _BDD2['default'].utils.callWith(_this.world, _this.stepFunction.fn, argsObject);
-
-        var didReturnPromise = _BDD2['default'].utils.promises.isPromise(response);
-
-        if (!calledCallback && (didReturnPromise || _this.stepFunction.isAsync)) {
-          noCallbackTimer = setTimeout(function () {
-            failCallback('Step function promise did not resolve within ' + delay + 'ms');
-          }, delay);
-
-          if (didReturnPromise) {
-            response.then(_callback, failCallback);
-          }
-        } else {
-          _callback();
-        }
-      }, onStepError);
-    });
-
-    if (_BDD2['default'].queryParams.notrycatch) {
-      setTimeout(function () {
-        if (_BDD2['default'].utils.tryCatch.justThrewError) {
-          onStepError(_BDD2['default'].utils.tryCatch.uncaughtError);
-        }
-      });
-    }
-
-    return promise;
-  };
-
-  StepRecord.prototype.logMissing = function logMissingStep() {
-    this.initializeTesting();
-    this.result.missing = true;
-    this.result.status = 'missing';
-    this.log('MISSING STEP FUNCTION');
-  };
-
-  StepRecord.prototype.skip = function skipStep() {
-    if (this.stepFunction === 'missing') {
-      this.logMissing();
-    } else {
-      this.initializeTesting();
-      this.result.status = 'skipped';
-      this.log('SKIPPED STEP');
-    }
-  };
-
-  StepRecord.prototype.log = function logTestResult(entry) {
-    if (!entry) {
-      return;
-    }
-    if (entry instanceof Error) {
-      if (console.error && entry.stack) {
-        console.error(entry.stack);
-      }
-
-      this.result.error = entry;
-      this.result.status = 'failed';
-      this.result.passed = false;
-    }
-
-    this.result.log = this.result.log.concat(entry);
-  };
-
-  StepRecord.prototype.addAssertion = function addAssertion(assertion) {
-    this.result.assertions.push(assertion);
-  };
-
-  StepRecord.prototype.generateDefinition = function generateDefinition() {
-    var description = this.name.replace(/'/g, '\\\'');
-    return 'this.' + this.type + '(\'' + description + '\', function() {});';
-  };
-});
-
-define("bdd/models/universe/Universe", ["exports", "module"], function (exports, module) {
-  module.exports = Universe;
-
-  function Universe() {}
-});
-
-define('bdd/models/world/World', ['exports', 'module', 'BDD'], function (exports, module, _BDD) {
-  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-  var _BDD2 = _interopRequireDefault(_BDD);
-
-  module.exports = World;
-
-  function World() {}
-
-  World.prototype = {
-
-    constructor: World,
-
-    _init: function _init(scenario) {
-      this.activeScenario = scenario;
-      return this._invokeHooks('before');
-    },
-
-    _beforeEach: function _beforeEach(callback) {
-      callback();
-    },
-
-    _afterEach: function _afterEach(callback) {
-      callback();
-    },
-
-    _destroy: function _destroy() {
-      return this._invokeHooks('after');
-    },
-
-    _invokeHooks: function _invokeHooks(hook) {
-      var promise = new _BDD2['default'].$.Deferred();
-
-      var hooks = getTaggedHooks(this.activeScenario.tags, this[hook + 'Tags']);
-      var eachFnName = '_' + hook + 'Each';
-
-      hooks.unshift(this[eachFnName]);
-
-      var self = this;
-      _BDD2['default'].utils.eachSeries(hooks, function (fn, callback) {
-
-        _BDD2['default'].utils.callWith(self, fn, {
-          parent: self._parentWorld[eachFnName],
-          'done|callback': callback
-        });
-
-        if (!fn.isAsync) {
-          callback();
-        }
-      }, promise.resolve);
-
-      return promise;
-    }
-  };
-
-  World.prototype._getStepFunction = function getStepFunction(stepRecord) {
-    var stepFunctions = this._stepFunctions[stepRecord.type];
-    var stepFunction, match, i;
-
-    for (i = 0; i < stepFunctions.length; i++) {
-      stepFunction = stepFunctions[i];
-      match = stepRecord.name.match(stepFunction.regex);
-      if (match) {
-        break;
-      }
-    }
-
-    if (match) {
-      return stepFunction;
-    } else if (this._parentWorld) {
-      return this._parentWorld._getStepFunction(stepRecord);
-    }
-  };
-
-  World._x_create = function create(options, stepFunctions, ParentWorld) {
-    var NewWorld = function ScenarioSteps() {};
-    var WorldPrototype = ParentWorld || World;
-
-    NewWorld.prototype = new WorldPrototype();
-    NewWorld.prototype.constructor = NewWorld;
-    NewWorld.prototype._stepFunctions = stepFunctions;
-    if (ParentWorld) {
-      NewWorld.prototype._parentWorld = new ParentWorld();
-    }
-
-    options = options || {};
-
-    if (options.beforeEach) {
-      if (typeof options.beforeEach !== 'function') {
-        throw new Error('beforeEach must be a function');
-      }
-
-      options.beforeEach.isAsync = _BDD2['default'].utils.isAsync(options.beforeEach);
-
-      NewWorld.prototype._beforeEach = options.beforeEach;
-    }
-
-    if (options.afterEach) {
-      if (typeof options.afterEach !== 'function') {
-        throw new Error('afterEach must be a function');
-      }
-
-      options.afterEach.isAsync = _BDD2['default'].utils.isAsync(options.afterEach);
-
-      NewWorld.prototype._afterEach = options.afterEach;
-
-      // NewWorld.prototype._afterEach.argsNames = BDD.utils.getArgumentNames(NewWorld.prototype._afterEach);
-    }
-
-    return NewWorld;
-  };
-
-  World.create = function create(prototype, stepFunctions, ParentWorld) {
-
-    var constructor = prototype.constructor = prototype._constructor || function () {};
-    var proto;
-
-    if (ParentWorld) {
-      proto = prototype._parentWorld = new ParentWorld();
-    } else {
-      proto = new World();
-    }
-
-    prototype = _BDD2['default']._.extend({}, proto, prototype);
-
-    prototype._stepFunctions = stepFunctions;
-
-    constructor.prototype = prototype;
-
-    if (prototype.beforeEach) {
-      if (typeof prototype.beforeEach !== 'function') {
-        throw new Error('beforeEach must be a function');
-      }
-
-      prototype.beforeEach.isAsync = _BDD2['default'].utils.isAsync(prototype.beforeEach);
-
-      prototype._beforeEach = prototype.beforeEach;
-    }
-
-    if (prototype.afterEach) {
-      if (typeof prototype.afterEach !== 'function') {
-        throw new Error('afterEach must be a function');
-      }
-
-      prototype.afterEach.isAsync = _BDD2['default'].utils.isAsync(prototype.afterEach);
-
-      prototype._afterEach = prototype.afterEach;
-    }
-
-    return constructor;
-  };
-
-  function getTaggedHooks(tags, fns) {
-    if (!tags.length || !fns.length) {
-      return [];
-    }
-
-    var matchedFns = [];
-
-    fns.forEach(function (item) {
-      for (var i = 0; i < item.tags.length; i++) {
-        var tag = item.tags[i];
-        tag = tag.split(/,\s*/);
-        if (tag.length === 1) {
-          if (tags.indexOf(tag[0]) === -1) {
-            return;
-          }
-        } else {
-          if (!_BDD2['default']._.intersection(tags, tag).length) {
-            return;
-          }
-        }
-      }
-      matchedFns.push(item.fn);
-    });
-
-    return matchedFns;
   }
 });
 
@@ -31257,41 +31318,39 @@ define('bdd/ui/templates/step', ['exports', 'module'], function (exports, module
 });
 
 define('bdd/utils/each-series', ['exports', 'module', 'jquery'], function (exports, module, _jquery) {
-    module.exports = eachSeries;
+  module.exports = eachSeries;
 
-    function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    var _$ = _interopRequireDefault(_jquery);
+  var _$ = _interopRequireDefault(_jquery);
 
-    function eachSeries(arr, iterator, callback) {
-        var promise = new _$['default'].Deferred();
+  function eachSeries(arr, iterator, callback) {
+    callback = callback || function () {};
 
-        callback = callback || function () {};
-        if (!arr.length) {
-            return callback();
+    var promise = new _$['default'].Deferred();
+    var completed = 0;
+
+    iterate();
+
+    return promise;
+
+    function iterate() {
+      if (completed >= arr.length) {
+        callback();
+        return promise.resolve();
+      }
+
+      iterator(arr[completed], function (err) {
+        if (err) {
+          callback(err);
+          promise.reject(err);
+        } else {
+          completed += 1;
+          iterate();
         }
-        var completed = 0;
-        var iterate = function iterate() {
-            iterator(arr[completed], function (err) {
-                if (err) {
-                    callback(err);
-                    promise.reject(err);
-                    callback = function () {};
-                } else {
-                    completed += 1;
-                    if (completed >= arr.length) {
-                        promise.resolve();
-                        callback();
-                    } else {
-                        iterate();
-                    }
-                }
-            });
-        };
-        iterate();
-
-        return promise;
+      });
     }
+  }
 });
 
 define('bdd/utils/functions', ['exports', './getArgumentNames'], function (exports, _getArgumentNames) {
@@ -31375,6 +31434,10 @@ define('bdd/utils/getArgumentNames', ['exports', 'module'], function (exports, m
     var args = match ? match[1].split(/[\s,]+/) : [];
     return args;
   }
+});
+
+define("bdd/utils/globals/location", ["exports", "module"], function (exports, module) {
+  module.exports = location;
 });
 
 define('bdd/utils/htmlEscape', ['exports', 'module'], function (exports, module) {
@@ -31479,6 +31542,19 @@ define('bdd/utils/phantom-shims', ['exports'], function (exports) {
       return fBound;
     };
   }
+
+  // http://stackoverflow.com/a/17789929
+  // Patch since PhantomJS does not implement click() on HTMLElement.
+  if (!HTMLElement.prototype.click) {
+    HTMLElement.prototype.click = function () {
+      var ev = document.createEvent('MouseEvent');
+      ev.initMouseEvent('click',
+      /*bubble*/true, /*cancelable*/true, window, null, 0, 0, 0, 0, /*coordinates*/
+      false, false, false, false, /*modifier keys*/
+      0, /*button=left*/null);
+      this.dispatchEvent(ev);
+    };
+  }
 });
 
 define('bdd/utils/printStack', ['exports', 'module', './htmlEscape'], function (exports, module, _htmlEscape) {
@@ -31515,7 +31591,7 @@ define('bdd/utils/promises', ['exports', 'module', 'jquery'], function (exports,
   var promises = {};
 
   promises.create = function createPromise(failMsg, waitTime) {
-    waitTime = waitTime || BDD.CONFIGS.promiseTimeout;
+    waitTime = waitTime || 1000;
     failMsg = failMsg || 'Promise failed to resolve within specified wait time of ' + waitTime + 'ms';
     var promise = _$['default'].Deferred(),
         resolve = promise.resolve,
@@ -31538,10 +31614,14 @@ define('bdd/utils/promises', ['exports', 'module', 'jquery'], function (exports,
   module.exports = promises;
 });
 
-define('bdd/utils/query-params', ['exports', 'module'], function (exports, module) {
+define('bdd/utils/query-params', ['exports', 'module', './globals/location'], function (exports, module, _globalsLocation) {
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _location = _interopRequireDefault(_globalsLocation);
+
   module.exports = queryParams;
 
-  var params = location.search.substr(1).split('&');
+  var params = _location['default'].search.substr(1).split('&');
   var paramsObject = {};
   var i, len, parts;
   for (i = 0, len = params.length; i < len; i++) {
@@ -31565,7 +31645,7 @@ define('bdd/utils/query-params', ['exports', 'module'], function (exports, modul
         params = paramsObject;
         paramsObject = {};
       } else {
-        value = (location.search.match(new RegExp('[?&]' + params + '=?([^&]*)[&#$]?')) || [])[1];
+        value = (_location['default'].search.match(new RegExp('[?&]' + params + '=?([^&]*)[&#$]?')) || [])[1];
         return value === '' ? true : value;
       }
     } else if (typeof params !== 'object') {
@@ -31596,7 +31676,7 @@ define('bdd/utils/query-params', ['exports', 'module'], function (exports, modul
       parts.push(key + (paramsObject[key] === true ? '' : '=' + paramsObject[key]));
     }
 
-    location.search = parts.join('&');
+    _location['default'].search = parts.join('&');
   }
 });
 
@@ -31679,6 +31759,7 @@ define('bdd/utils/try-catch', ['exports', 'module', 'jquery', './query-params'],
   };
 
   _$['default'](window).on('error', function (event) {
+    tryCatch.justThrewError = true;
     tryCatch.uncaughtError = event.originalEvent.error;
   });
 

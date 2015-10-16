@@ -2,57 +2,71 @@
 
 require = requirejs = (function(_require) {
 
-  function newRequire(moduleName, mocks) {
+  var mockCount = 0;
+
+  for (var key in _require) {
+    mockRequire[key] = _require[key];
+  }
+
+  mockRequire.mocks = {};
+  mockRequire.originalModules = {};
+  mockRequire.mock = mock;
+  mockRequire.restore = restore;
+  mockRequire.clear = clear;
+
+  return mockRequire;
+
+  function mockRequire(moduleName, mocks) {
     if (arguments.length === 1) {
       return _require(moduleName);
     }
-
-    var originalDeps = {};
-    var name, mod;
     
     // Add mocks to registry
-    for (name in mocks) {
-      mod = _require.entries[name];
-      originalDeps[name] = mod.callback;
-      mod.callback = createCallback(mocks[name]);
-    }
-
-    function createCallback(mockModule) {
-      return function() {
-        return mockModule;
-      };
+    for (var name in mocks) {
+      mock(name, mocks[name]);
     }
 
     var exports = _require(moduleName);
 
-    // Restore registry
-    for (name in originalDeps) {
-      _require.unsee(name);
-      _require.entries[name].callback = originalDeps[name];
-    }
+    restore();
 
     return exports;
   }
 
-  for (var key in _require) {
-    newRequire[key] = _require[key];
+  function mock(moduleName, mockModule) {
+    var mod = _require.entries[moduleName];
+    mockRequire.originalModules[moduleName] = mod.callback;
+    mod.callback = createCallback(mockModule, moduleName);
   }
 
+  function createCallback(mockModule, moduleName) {
+    // the technique of using the Function constructor is required
+    // to be compatible test coverage tools like blanket.js
+    var fnName = 'fn' + '_' + (++mockCount) + '_' + moduleName;
+    mockRequire.mocks[fnName] = mockModule;
+    return new Function('return window.require.mocks["' + fnName + '"];');
+  }
 
-  newRequire.clear = function(path) {
-    if (! path) {
-      return _require.clear();
+  function restore() {
+    for (var moduleName in mockRequire.originalModules) {
+      _require.unsee(moduleName);
+      _require.entries[moduleName].callback = mockRequire.originalModules[moduleName];
+      delete mockRequire.originalModules[moduleName];
     }
+  }
 
-    var regex = new RegExp('^' + path);
-
-    for (var moduleName in _require.entries) {
-      if (moduleName.match(regex)) {
-        _require.unsee(moduleName);
+  function clear(path) {
+      if (! path) {
+        return _require.clear();
       }
-    }
-  };
 
-  return newRequire;
+      var regex = new RegExp('^' + path);
+
+      for (var moduleName in _require.entries) {
+        if (moduleName.match(regex)) {
+          _require.unsee(moduleName);
+        }
+      }
+  }
 
 })(require);

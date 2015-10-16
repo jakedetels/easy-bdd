@@ -65,6 +65,7 @@ var _ = require('underscore');
 export default function(expect) {
 
   this.World = function() {
+    require.clear('app/');
     this.params = {};
 
     var self = this;
@@ -82,6 +83,10 @@ export default function(expect) {
     };
   };
 
+  this.After(function() {
+    require.clear('app/');
+  });
+
   this.Given('URL parameter <param>', function(param) {
     this.processParam(param);
 
@@ -90,12 +95,10 @@ export default function(expect) {
     });
   });
 
-  this.Given('two sets of feature files', function() {
-    
-  });
+  this.Given('two sets of feature files', function() {});
 
   this.When('the features are initialized', function() {
-    var Feature = require('app/models/feature/Feature');
+    var Feature = require('app/models/Feature');
     this.features = [];
     this.features.push(new Feature({file: featureFile1}));
     this.features.push(new Feature({file: featureFile2}));

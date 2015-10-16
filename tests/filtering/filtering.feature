@@ -1,4 +1,4 @@
-Feature: Can specify which features and scenarios will be run
+Feature: Can filter features and scenarios to be run
 
 In order to focus my attention on certain tests
 As the user
