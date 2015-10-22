@@ -29570,9 +29570,9 @@ define('bdd/helpers/helpers', ['exports', 'module', 'jquery', 'BDD', '../asserti
       $el.filter(function () {
         return values.indexOf(_$['default'](this).attr('value')) > -1;
       }).prop('checked', true);
+    } else {
+      $el.val(values.join(''));
     }
-
-    $el.val(values.join(''));
   }
 
   function findWithAssert(selector, context) {
@@ -30211,7 +30211,7 @@ define('bdd/models/Scenario', ['exports', 'module', 'jquery', 'underscore', '../
           _this.result.status = test.result.status;
           _this.result.failed++;
         }
-
+        _this.result.error = test.result.error;
         _this.elapsedTime += test.result.elapsedTime;
         _this.result.elapsedTime += test.result.elapsedTime;
         _this.result.assertions += test.result.assertions;
@@ -30430,6 +30430,7 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
     var failCallback = _2['default'].once(function (response) {
       clearTimeout(noCallbackTimer);
       _this.result.status = 'failed';
+      _this.result.error = response;
       _this.log(response);
       if (promise.state() === 'pending') {
         promise.reject(response);
@@ -30495,7 +30496,6 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
       }, onStepError);
     });
 
-    // if (BDD.queryParams.notrycatch) {
     if (_utils['default'].queryParams('notrycatch')) {
       setTimeout(function () {
         if (_utils['default'].tryCatch.justThrewError) {
@@ -30551,7 +30551,7 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
   };
 });
 
-define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '../utils/each-series'], function (exports, module, _BDD, _jquery, _Events, _utilsEachSeries) {
+define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '../utils/try-catch', '../utils/printStack', '../utils/each-series'], function (exports, module, _BDD, _jquery, _Events, _utilsTryCatch, _utilsPrintStack, _utilsEachSeries) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _BDD2 = _interopRequireDefault(_BDD);
@@ -30559,6 +30559,10 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
   var _$ = _interopRequireDefault(_jquery);
 
   var _Events2 = _interopRequireDefault(_Events);
+
+  var _tryCatch = _interopRequireDefault(_utilsTryCatch);
+
+  var _printStack = _interopRequireDefault(_utilsPrintStack);
 
   var _eachSeries = _interopRequireDefault(_utilsEachSeries);
 
@@ -30617,7 +30621,21 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
 
     var startTime = Date.now();
 
-    var world = new this.World();
+    var world;
+    _tryCatch['default'](function () {
+      world = new _this2.World();
+    }, function (err) {
+      _this2.result.passed = false;
+      _this2.result.status = 'failed';
+      err.message = 'An error occurred in the World constructor.  Received error: ' + err.message;
+      err.stackArray = _printStack['default'](err);
+      _this2.result.error = err;
+      console.error(err.stack);
+    });
+
+    if (!world) {
+      return promise.resolve();
+    }
 
     world._init(this).then(function () {
       _this2.steps.forEach(function (step) {
@@ -30631,8 +30649,20 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
         });
       }).then(function () {
         _BDD2['default'].activeStep = null;
+
         _this2.result.elapsedTime = Date.now() - startTime;
-        world._destroy().then(promise.resolve);
+
+        _tryCatch['default'](function () {
+          world._destroy().then(promise.resolve);
+        }, function (err) {
+          _this2.result.passed = false;
+          _this2.result.status = 'failed';
+          err.message = 'An error occurred in an After hook.  Received error: ' + err.message;
+          err.stackArray = _printStack['default'](err);
+          _this2.result.error = err;
+          console.error(err.stack);
+          promise.resolve();
+        });
       });
     });
 
@@ -30660,7 +30690,6 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
       step.run(this.example.data).done(promise.resolve).fail(function () {
         _this3.result.passed = false;
         _this3.result.failedStep = step;
-        _this3.result.error = step.result.error;
         _this3.result.status = step.result.status;
         promise.reject();
       });
@@ -30923,12 +30952,10 @@ define('bdd/models/feature-parser', ['exports', 'module', './Scenario', './Examp
   };
 
   fn.process.background_start = function () {
-    var background = {
+    this.backgroundToAssign = this.active.stepHolder = {
       steps: [],
       given: []
     };
-    this.active.stepHolder = background;
-    this.feature.background = background;
   };
 
   fn.process.scenario_start = function () {
@@ -30939,18 +30966,30 @@ define('bdd/models/feature-parser', ['exports', 'module', './Scenario', './Examp
       name: this.active.line.match(/scenario: *(.*)/i)[1]
     });
 
+    if (this.backgroundToAssign) {
+      this.assignBackground(scenario);
+    }
+
     this.feature.scenarios.push(scenario);
     this.active.stepHolder = scenario;
     this.active.scenario = scenario;
   };
 
+  fn.assignBackground = function (scenario) {
+    scenario.steps = this.backgroundToAssign.steps.concat(scenario.steps);
+    scenario.given = this.backgroundToAssign.given.concat(scenario.given);
+  };
+
   fn.process.Given = function () {
-    var regex = new RegExp('^(' + this.active.lineType + '|and|but) *(.*)', 'i');
+    var type = this.active.lineType;
+    var regex = new RegExp('^(' + type + '|and|but) *(.*)', 'i');
     var match = this.active.line.match(regex);
+    var prefix = match[1];
+    prefix = this.backgroundToAssign && prefix === 'Given' && this.backgroundToAssign.steps.length ? 'And' : prefix;
     var step = new _StepRecord2['default']({
-      type: this.active.lineType,
+      type: type,
       name: match[2],
-      prefix: match[1]
+      prefix: prefix
     });
 
     step.tags = this.emptyTags();
@@ -31310,11 +31349,11 @@ define('bdd/ui/templates/log', ['exports', 'module'], function (exports, module)
 });
 
 define('bdd/ui/templates/scenario', ['exports', 'module'], function (exports, module) {
-  module.exports = '<% if (! exclude) { %>\r\n\r\n<li class="scenario <%= result.status %>">\r\n  <div class="heading <%= steps.length ? \'toggle\' : \'\' %>">\r\n    <div>Scenario: <%= name %></div>\r\n    <% if (result.status === \'missing\') { %>\r\n    <div class="generate-missing-steps">Generate Missing Step Definitions</div>\r\n    <% } %>\r\n    <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === \'number\' ? \'ms\' : \'\') %></span>\r\n  </div>\r\n  \r\n  <% if (skip) { %>\r\n  <div>Skipping steps</div>\r\n  <% } else { %>\r\n\r\n  <ol class="content steps">\r\n    <% if (tests.length === 1) { %>\r\n    <div template="step" records="steps"></div>\r\n    <% } else { %>\r\n      <% _.each(steps, function(step) { %>\r\n\r\n      <li class="step <%= step.result.status + \' step-prefix-\' + step.prefix.toLowerCase() %>">\r\n        <div class="heading">\r\n          <span name><%- step.prefix + \' \' + step.name %></span>\r\n        </div>\r\n      </li>\r\n\r\n      <% }); %>\r\n    <% } %>\r\n  </ol>\r\n\r\n  <% } %>\r\n\r\n  <% if (examples.length) { %>\r\n  <h2>Examples:</h2>\r\n  <div>Passed: <span><%= result.passed %></span>Failed: <span><%= result.failed %></span></div>\r\n  <table class="examples">\r\n    <thead>\r\n      <tr>\r\n        <td class="index">No.</td>\r\n        <td class="status">Status</td>\r\n        <% _.each(examples.headers, function(header) { %>\r\n        <td><%= header %></td>\r\n        <% }); %>\r\n        <td>Time</td>\r\n      </tr>\r\n    </thead>\r\n    <tbody>\r\n      <tr template="example" records="examples"></tr>\r\n    </tbody>\r\n  </table>\r\n  <% } %>\r\n\r\n</li>\r\n\r\n<% } %>';
+  module.exports = '<% if (! exclude) { %>\r\n\r\n<li class="scenario <%= result.status %>">\r\n  <div class="heading <%= steps.length ? \'toggle\' : \'\' %>">\r\n    <div>Scenario: <%= name %></div>\r\n    <% if (result.status === \'missing\') { %>\r\n    <div class="generate-missing-steps">Generate Missing Step Definitions</div>\r\n    <% } %>\r\n    <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === \'number\' ? \'ms\' : \'\') %></span>\r\n  </div>\r\n  <% if (skip) { %>\r\n  <div>Skipping steps</div>\r\n  <% } else if (result.error) { %>\r\n  <div class="error">\r\n    <div template="error" records="result.error"></div>\r\n  </div>\r\n  <% } else { %>\r\n\r\n  <ol class="content steps">\r\n    <% if (tests.length === 1) { %>\r\n    <div template="step" records="steps"></div>\r\n    <% } else { %>\r\n      <% _.each(steps, function(step) { %>\r\n\r\n      <li class="step <%= step.result.status + \' step-prefix-\' + step.prefix.toLowerCase() %>">\r\n        <div class="heading">\r\n          <span name><%- step.prefix + \' \' + step.name %></span>\r\n        </div>\r\n      </li>\r\n\r\n      <% }); %>\r\n    <% } %>\r\n  </ol>\r\n\r\n  <% } %>\r\n\r\n  <% if (examples.length) { %>\r\n  <h2>Examples:</h2>\r\n  <div>Passed: <span><%= result.passed %></span>Failed: <span><%= result.failed %></span></div>\r\n  <table class="examples">\r\n    <thead>\r\n      <tr>\r\n        <td class="index">No.</td>\r\n        <td class="status">Status</td>\r\n        <% _.each(examples.headers, function(header) { %>\r\n        <td><%= header %></td>\r\n        <% }); %>\r\n        <td>Time</td>\r\n      </tr>\r\n    </thead>\r\n    <tbody>\r\n      <tr template="example" records="examples"></tr>\r\n    </tbody>\r\n  </table>\r\n  <% } %>\r\n\r\n</li>\r\n\r\n<% } %>';
 });
 
 define('bdd/ui/templates/step', ['exports', 'module'], function (exports, module) {
-  module.exports = '<li class="step <%= result.status + \' step-prefix-\' + prefix.toLowerCase() %>">\r\n  <div class="heading <%= result.log.length ? \'toggle\' : \'\' %>">\r\n    <span name><%- prefix + \' \' + name %></span>\r\n  </div>\r\n  <ul class="content logs">\r\n    <div template="log" records="result.log"></div>\r\n  </ul>\r\n</li>';
+  module.exports = '<% //debugger; %>\r\n<li class="step <%= result.status + \' step-prefix-\' + prefix.toLowerCase() %>">\r\n  <div class="heading <%= result.log.length ? \'toggle\' : \'\' %>">\r\n    <span name><%- prefix + \' \' + name %></span>\r\n  </div>\r\n  <ul class="content logs">\r\n    <div template="log" records="result.log"></div>\r\n  </ul>\r\n</li>';
 });
 
 define('bdd/utils/each-series', ['exports', 'module', 'jquery'], function (exports, module, _jquery) {
@@ -31592,12 +31631,10 @@ define('bdd/utils/promises', ['exports', 'module', 'jquery'], function (exports,
 
   promises.create = function createPromise(failMsg, waitTime) {
     waitTime = waitTime || 1000;
-    failMsg = failMsg || 'Promise failed to resolve within specified wait time of ' + waitTime + 'ms';
-    var promise = _$['default'].Deferred(),
-        resolve = promise.resolve,
-        timer = setTimeout(function () {
-      promise.reject(failMsg);
-    }, waitTime);
+
+    var promise = _$['default'].Deferred();
+    var resolve = promise.resolve;
+    var timer = setTimeout(reject, waitTime);
 
     promise.resolve = function (response) {
       clearTimeout(timer);
@@ -31605,6 +31642,13 @@ define('bdd/utils/promises', ['exports', 'module', 'jquery'], function (exports,
     };
 
     return promise;
+
+    function reject() {
+      failMsg = failMsg || 'Promise failed to resolve within specified wait time of ' + waitTime + 'ms';
+      var error = new Error(failMsg);
+      error.name = 'PromiseError';
+      promise.reject(error);
+    }
   };
 
   promises.isPromise = function isPromise(val) {

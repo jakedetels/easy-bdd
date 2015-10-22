@@ -8,9 +8,12 @@
     <% } %>
     <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === 'number' ? 'ms' : '') %></span>
   </div>
-  
   <% if (skip) { %>
   <div>Skipping steps</div>
+  <% } else if (result.error) { %>
+  <div class="error">
+    <div template="error" records="result.error"></div>
+  </div>
   <% } else { %>
 
   <ol class="content steps">
