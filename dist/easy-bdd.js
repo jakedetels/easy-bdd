@@ -30395,8 +30395,10 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
     this.initializeTesting();
 
     var calledCallback = false;
-    var delay = this.stepFunction.wait || 1000;
-    var promise = _utils['default'].promises.create('Step promise failed to resolve within ' + delay + 'ms', delay + 1);
+    var wait = this.stepFunction.wait || 1000;
+    var delay = this.stepFunction.delay || 0;
+    var promiseWait = wait + delay;
+    var promise = _utils['default'].promises.create('Step promise failed to resolve within ' + wait + 'ms', promiseWait + 1);
     var noCallbackTimer;
 
     var _callback = _2['default'].once(function (error) {
@@ -30484,8 +30486,8 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
 
         if (!calledCallback && (didReturnPromise || _this.stepFunction.isAsync)) {
           noCallbackTimer = setTimeout(function () {
-            failCallback('Step function promise did not resolve within ' + delay + 'ms');
-          }, delay);
+            failCallback('Step function promise did not resolve within ' + wait + 'ms');
+          }, wait);
 
           if (didReturnPromise) {
             response.then(_callback, failCallback);
@@ -30494,7 +30496,7 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
           _callback();
         }
       }, onStepError);
-    });
+    }, delay);
 
     if (_utils['default'].queryParams('notrycatch')) {
       setTimeout(function () {
