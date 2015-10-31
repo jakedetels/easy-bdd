@@ -1,4 +1,4 @@
-# Easy BDD
+# Obey.JS
 This is a work in progress and not yet ready for primetime.
 
 # Filtering Tests to Run

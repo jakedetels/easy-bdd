@@ -1,5 +1,5 @@
 
-/** Easy BDD - A behaviorially-driven development framework **/
+/** Obey - A behaviorially-driven development framework **/
 
 (function() {
 
@@ -29215,7 +29215,7 @@ if (typeof QUnit !== 'undefined'){
     }
 }
 })();
-define('bdd/Events', ['exports', 'module'], function (exports, module) {
+define('obey/Events', ['exports', 'module'], function (exports, module) {
   var Events = {};
 
   Events.listeners = {};
@@ -29247,7 +29247,7 @@ define('bdd/Events', ['exports', 'module'], function (exports, module) {
   module.exports = Events;
 });
 
-define('bdd/Filter', ['exports', 'module', 'underscore', './utils/query-params'], function (exports, module, _underscore, _utilsQueryParams) {
+define('obey/Filter', ['exports', 'module', 'underscore', './utils/query-params'], function (exports, module, _underscore, _utilsQueryParams) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   // npm test exclude="feature@uncaught,scenario@foo,@foo@bar,/foo/bar/,/path/to/file/feature[hello world]@foo@bar"
@@ -29393,12 +29393,12 @@ define('bdd/Filter', ['exports', 'module', 'underscore', './utils/query-params']
   module.exports = new Filter();
 });
 
-define('bdd/assertions', ['exports', 'BDD', 'chai'], function (exports, _BDD, _chai) {
+define('obey/assertions', ['exports', 'Obey', 'chai'], function (exports, _Obey, _chai) {
   exports.__esModule = true;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _Obey2 = _interopRequireDefault(_Obey);
 
   var _chai2 = _interopRequireDefault(_chai);
 
@@ -29424,11 +29424,11 @@ define('bdd/assertions', ['exports', 'BDD', 'chai'], function (exports, _BDD, _c
   // https://github.com/switchfly/ember-cli-mocha/issues/37#issuecomment-75460873
   // window['should'] = wrapMethod('should');
 
-  // BDD.chai.config.includeStack = true;
+  // Obey.chai.config.includeStack = true;
 
   function wrapMethod(fn) {
     return function () {
-      var step = _BDD2['default'].activeStep;
+      var step = _Obey2['default'].activeStep;
 
       if (!step) {
         throw new Error('Assertions cannot be run outside of a scenario step.');
@@ -29441,7 +29441,7 @@ define('bdd/assertions', ['exports', 'BDD', 'chai'], function (exports, _BDD, _c
   }
 });
 
-define('bdd/blanket/adapter', ['exports', './loaderjs-adapter', '../Events'], function (exports, _loaderjsAdapter, _Events) {
+define('obey/blanket/adapter', ['exports', './loaderjs-adapter', '../Events'], function (exports, _loaderjsAdapter, _Events) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _Events2 = _interopRequireDefault(_Events);
@@ -29482,7 +29482,7 @@ define('bdd/blanket/adapter', ['exports', './loaderjs-adapter', '../Events'], fu
 });
 /* global blanket */
 
-define('bdd/blanket/loaderjs-adapter', ['exports'], function (exports) {
+define('obey/blanket/loaderjs-adapter', ['exports'], function (exports) {
   exports.__esModule = true;
   exports.loadUnusedModules = loadUnusedModules;
   var _require = window.require;
@@ -29532,12 +29532,12 @@ define('bdd/blanket/loaderjs-adapter', ['exports'], function (exports) {
   }
 });
 
-define('bdd/helpers/helpers', ['exports', 'module', 'jquery', 'BDD', '../assertions'], function (exports, module, _jquery, _BDD, _assertions) {
+define('obey/helpers/helpers', ['exports', 'module', 'jquery', 'Obey', '../assertions'], function (exports, module, _jquery, _Obey, _assertions) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _Obey2 = _interopRequireDefault(_Obey);
 
   module.exports = {
     click: click,
@@ -29586,17 +29586,17 @@ define('bdd/helpers/helpers', ['exports', 'module', 'jquery', 'BDD', '../asserti
   }
 
   function reject(msg) {
-    if (_BDD2['default'].activeStepPromise) {
+    if (_Obey2['default'].activeStepPromise) {
       try {
         _assertions.assert(false, msg);
       } catch (e) {
-        _BDD2['default'].activeStepPromise.reject(e);
+        _Obey2['default'].activeStepPromise.reject(e);
       }
     }
   }
 });
 
-define('bdd/index', ['exports', 'jquery', './models/FeatureTree', './models/Feature', './models/Scenario', './models/Example', './models/StepRecord', './models/StepFunction', './models/World', './models/Universe', './ui/index', './utils/index', './Events', './Filter', './helpers/helpers', 'underscore'], function (exports, _jquery, _modelsFeatureTree, _modelsFeature, _modelsScenario, _modelsExample, _modelsStepRecord, _modelsStepFunction, _modelsWorld, _modelsUniverse, _uiIndex, _utilsIndex, _Events, _Filter, _helpersHelpers, _underscore) {
+define('obey/index', ['exports', 'jquery', './models/FeatureTree', './models/Feature', './models/Scenario', './models/Example', './models/StepRecord', './models/StepFunction', './models/World', './models/Universe', './ui/index', './utils/index', './Events', './Filter', './helpers/helpers', 'underscore'], function (exports, _jquery, _modelsFeatureTree, _modelsFeature, _modelsScenario, _modelsExample, _modelsStepRecord, _modelsStepFunction, _modelsWorld, _modelsUniverse, _uiIndex, _utilsIndex, _Events, _Filter, _helpersHelpers, _underscore) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -29633,15 +29633,15 @@ define('bdd/index', ['exports', 'jquery', './models/FeatureTree', './models/Feat
 
   var isPhantom = /PhantomJS/.test(window.navigator.userAgent);
   if (isPhantom) {
-    require('bdd/utils/phantom-shims');
+    require('obey/utils/phantom-shims');
   }
 
-  var BDD = window.BDD = require('BDD');
-  _2['default'].extend(BDD, window.BDD_options);
+  var Obey = window.Obey = require('Obey');
+  _2['default'].extend(Obey, window.Obey_options);
 
   var ui = new _UI['default']();
 
-  _2['default'].extend(BDD, {
+  _2['default'].extend(Obey, {
     $: _$['default'],
     chai: require('chai'),
     _: _2['default'],
@@ -29661,7 +29661,7 @@ define('bdd/index', ['exports', 'jquery', './models/FeatureTree', './models/Feat
     filter: _filter2['default']
   });
 
-  BDD.CONFIGS = {
+  Obey.CONFIGS = {
     promiseTimeout: 1000
   };
 
@@ -29670,20 +29670,20 @@ define('bdd/index', ['exports', 'jquery', './models/FeatureTree', './models/Feat
     // blanket.options({debug: true});
 
     var selector = typeof coverage === 'string' ? coverage : '';
-    var _filter = new RegExp('^' + BDD.appModuleRoot + '/.*' + selector, 'i');
+    var _filter = new RegExp('^' + Obey.appModuleRoot + '/.*' + selector, 'i');
 
     blanket.options('filter', _filter);
     blanket.options('branchTracking', true);
-    require('bdd/blanket/loaderjs-adapter');
+    require('obey/blanket/loaderjs-adapter');
   }
-  var loadTests = require('bdd/loaders/load-tests-amd');
+  var loadTests = require('obey/loaders/load-tests-amd');
 
-  BDD.tree = loadTests();
+  Obey.tree = loadTests();
 
   var useTestem = typeof Testem !== 'undefined';
   var testemAdapter;
   if (useTestem) {
-    testemAdapter = require('bdd/testem/testem-adapter');
+    testemAdapter = require('obey/testem/testem-adapter');
     testemAdapter.start();
   }
 
@@ -29702,29 +29702,29 @@ define('bdd/index', ['exports', 'jquery', './models/FeatureTree', './models/Feat
   }
 
   if (coverage) {
-    require('bdd/blanket/adapter');
+    require('obey/blanket/adapter');
     blanket.beforeStartTestRunner({ callback: begin });
   } else {
     begin();
   }
 
   function init() {
-    BDD.tree.init();
+    Obey.tree.init();
 
-    var features = BDD.tree.getFeatures();
+    var features = Obey.tree.getFeatures();
 
-    return BDD.Feature.run(features, function (feature) {
-      setTimeout(BDD.ui.printFeatureTestResults.bind(BDD.ui, feature), 0);
+    return Obey.Feature.run(features, function (feature) {
+      setTimeout(Obey.ui.printFeatureTestResults.bind(Obey.ui, feature), 0);
     });
   }
 });
 
-define('bdd/loaders/load-tests-amd', ['exports', 'module', 'BDD'], function (exports, module, _BDD) {
+define('obey/loaders/load-tests-amd', ['exports', 'module', 'Obey'], function (exports, module, _Obey) {
   module.exports = loadTestsAMD;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _Obey2 = _interopRequireDefault(_Obey);
 
   // import FeatureTree from '../models/feature-tree/FeatureTree';
 
@@ -29732,12 +29732,12 @@ define('bdd/loaders/load-tests-amd', ['exports', 'module', 'BDD'], function (exp
     var require = window.requirejs;
     var entries = require.entries;
     var directory = '<<__ROOT_MODULE__>>';
-    var tree = new _BDD2['default'].FeatureTree(directory);
+    var tree = new _Obey2['default'].FeatureTree(directory);
     // var tree = new FeatureTree(directory); 
     var moduleName, filePath, fileExport;
     var moduleNamePattern = new RegExp('^.*(-feature$|steps$|world$)');
 
-    window.BDD_files = {}; // for debugging only
+    window.Obey_files = {}; // for debugging only
 
     for (moduleName in entries) {
       if (!moduleName.match(moduleNamePattern)) {
@@ -29749,14 +29749,14 @@ define('bdd/loaders/load-tests-amd', ['exports', 'module', 'BDD'], function (exp
       fileExport = fileExport['default'] || fileExport;
       tree.addToTree(filePath, fileExport);
 
-      window.BDD_files[filePath] = fileExport;
+      window.Obey_files[filePath] = fileExport;
     }
 
     return tree;
   }
 });
 
-define("bdd/models/Example", ["exports", "module"], function (exports, module) {
+define("obey/models/Example", ["exports", "module"], function (exports, module) {
   module.exports = Example;
 
   function Example(headers, data) {
@@ -29774,7 +29774,7 @@ define("bdd/models/Example", ["exports", "module"], function (exports, module) {
   }
 });
 
-define('bdd/models/Feature', ['exports', 'module', 'underscore', 'jquery', '../utils/each-series', '../Events', '../Filter', './feature-parser'], function (exports, module, _underscore, _jquery, _utilsEachSeries, _Events, _Filter, _featureParser) {
+define('obey/models/Feature', ['exports', 'module', 'underscore', 'jquery', '../utils/each-series', '../Events', '../Filter', './feature-parser'], function (exports, module, _underscore, _jquery, _utilsEachSeries, _Events, _Filter, _featureParser) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _2 = _interopRequireDefault(_underscore);
@@ -29917,7 +29917,7 @@ define('bdd/models/Feature', ['exports', 'module', 'underscore', 'jquery', '../u
   };
 });
 
-define('bdd/models/FeatureTree', ['exports', 'module', 'underscore', '../utils/index', './World', './Feature', './StepFunction', '../assertions'], function (exports, module, _underscore, _utilsIndex, _World, _Feature, _StepFunction, _assertions) {
+define('obey/models/FeatureTree', ['exports', 'module', 'underscore', '../utils/index', './World', './Feature', './StepFunction', '../assertions'], function (exports, module, _underscore, _utilsIndex, _World, _Feature, _StepFunction, _assertions) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _2 = _interopRequireDefault(_underscore);
@@ -30138,7 +30138,7 @@ define('bdd/models/FeatureTree', ['exports', 'module', 'underscore', '../utils/i
   };
 });
 
-define('bdd/models/Scenario', ['exports', 'module', 'jquery', 'underscore', '../Events', '../Filter', './Test', '../utils/each-series'], function (exports, module, _jquery, _underscore, _Events, _Filter, _Test, _utilsEachSeries) {
+define('obey/models/Scenario', ['exports', 'module', 'jquery', 'underscore', '../Events', '../Filter', './Test', '../utils/each-series'], function (exports, module, _jquery, _underscore, _Events, _Filter, _Test, _utilsEachSeries) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -30237,7 +30237,7 @@ define('bdd/models/Scenario', ['exports', 'module', 'jquery', 'underscore', '../
   };
 });
 
-define('bdd/models/StepFunction', ['exports', 'module', 'underscore', '../utils/index'], function (exports, module, _underscore, _utilsIndex) {
+define('obey/models/StepFunction', ['exports', 'module', 'underscore', '../utils/index'], function (exports, module, _underscore, _utilsIndex) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _2 = _interopRequireDefault(_underscore);
@@ -30348,10 +30348,10 @@ define('bdd/models/StepFunction', ['exports', 'module', 'underscore', '../utils/
   };
 });
 
-define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'underscore', '../utils/index'], function (exports, module, _BDD, _jquery, _underscore, _utilsIndex) {
+define('obey/models/StepRecord', ['exports', 'module', 'Obey', 'jquery', 'underscore', '../utils/index'], function (exports, module, _Obey, _jquery, _underscore, _utilsIndex) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _Obey2 = _interopRequireDefault(_Obey);
 
   var _$ = _interopRequireDefault(_jquery);
 
@@ -30441,7 +30441,7 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
 
     promise.fail(failCallback);
 
-    _BDD2['default'].activeStep = this;
+    _Obey2['default'].activeStep = this;
 
     var self = this;
 
@@ -30455,10 +30455,10 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
       failCallback();
     }
 
-    _BDD2['default'].activeStepPromise = new _$['default'].Deferred();
-    _BDD2['default'].activeStepPromise.fail(onStepError);
+    _Obey2['default'].activeStepPromise = new _$['default'].Deferred();
+    _Obey2['default'].activeStepPromise.fail(onStepError);
     promise.always(function () {
-      _BDD2['default'].activeStepPromise = null;
+      _Obey2['default'].activeStepPromise = null;
     });
 
     setTimeout(function () {
@@ -30553,10 +30553,10 @@ define('bdd/models/StepRecord', ['exports', 'module', 'BDD', 'jquery', 'undersco
   };
 });
 
-define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '../utils/try-catch', '../utils/printStack', '../utils/each-series'], function (exports, module, _BDD, _jquery, _Events, _utilsTryCatch, _utilsPrintStack, _utilsEachSeries) {
+define('obey/models/Test', ['exports', 'module', 'Obey', 'jquery', '../Events', '../utils/try-catch', '../utils/printStack', '../utils/each-series'], function (exports, module, _Obey, _jquery, _Events, _utilsTryCatch, _utilsPrintStack, _utilsEachSeries) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _Obey2 = _interopRequireDefault(_Obey);
 
   var _$ = _interopRequireDefault(_jquery);
 
@@ -30650,7 +30650,7 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
           callback(response);
         });
       }).then(function () {
-        _BDD2['default'].activeStep = null;
+        _Obey2['default'].activeStep = null;
 
         _this2.result.elapsedTime = Date.now() - startTime;
 
@@ -30677,7 +30677,7 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
     var promise = new _$['default'].Deferred();
 
     this.lastStep = step;
-    _BDD2['default'].activeStep = null;
+    _Obey2['default'].activeStep = null;
 
     if (!this.result.passed) {
       step.skip();
@@ -30701,13 +30701,13 @@ define('bdd/models/Test', ['exports', 'module', 'BDD', 'jquery', '../Events', '.
   };
 });
 
-define("bdd/models/Universe", ["exports", "module"], function (exports, module) {
+define("obey/models/Universe", ["exports", "module"], function (exports, module) {
   module.exports = Universe;
 
   function Universe() {}
 });
 
-define('bdd/models/World', ['exports', 'module', 'jquery', 'underscore', '../utils/index'], function (exports, module, _jquery, _underscore, _utilsIndex) {
+define('obey/models/World', ['exports', 'module', 'jquery', 'underscore', '../utils/index'], function (exports, module, _jquery, _underscore, _utilsIndex) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -30872,7 +30872,7 @@ define('bdd/models/World', ['exports', 'module', 'jquery', 'underscore', '../uti
   };
 });
 
-define('bdd/models/feature-parser', ['exports', 'module', './Scenario', './Example', './StepRecord', '../utils/smartTypeCast'], function (exports, module, _Scenario, _Example, _StepRecord, _utilsSmartTypeCast) {
+define('obey/models/feature-parser', ['exports', 'module', './Scenario', './Example', './StepRecord', '../utils/smartTypeCast'], function (exports, module, _Scenario, _Example, _StepRecord, _utilsSmartTypeCast) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _Scenario2 = _interopRequireDefault(_Scenario);
@@ -31072,7 +31072,7 @@ define('bdd/models/feature-parser', ['exports', 'module', './Scenario', './Examp
   }
 });
 
-define("bdd/testem/testem-adapter", ["exports", "module", "../Events"], function (exports, module, _Events) {
+define("obey/testem/testem-adapter", ["exports", "module", "../Events"], function (exports, module, _Events) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
   /* global Testem */
@@ -31150,7 +31150,7 @@ define("bdd/testem/testem-adapter", ["exports", "module", "../Events"], function
   module.exports = adapter;
 });
 
-define("bdd/testem/testem", ["exports"], function (exports) {});
+define("obey/testem/testem", ["exports"], function (exports) {});
 /**
  * This is dummy file that exists for the sole purpose
  * of allowing tests to run directly in the browser as
@@ -31171,7 +31171,7 @@ define("bdd/testem/testem", ["exports"], function (exports) {});
  * directly from the express server to satisify the script load.
  */
 
-define('bdd/ui/index', ['exports', 'module', 'jquery', './templates/feature', './templates/scenario', './templates/step', './templates/log', './templates/index', './templates/error', './templates/example', 'underscore', 'BDD'], function (exports, module, _jquery, _templatesFeature, _templatesScenario, _templatesStep, _templatesLog, _templatesIndex, _templatesError, _templatesExample, _underscore, _BDD) {
+define('obey/ui/index', ['exports', 'module', 'jquery', './templates/feature', './templates/scenario', './templates/step', './templates/log', './templates/index', './templates/error', './templates/example', 'underscore', 'Obey'], function (exports, module, _jquery, _templatesFeature, _templatesScenario, _templatesStep, _templatesLog, _templatesIndex, _templatesError, _templatesExample, _underscore, _Obey) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -31192,7 +31192,7 @@ define('bdd/ui/index', ['exports', 'module', 'jquery', './templates/feature', '.
 
   var _2 = _interopRequireDefault(_underscore);
 
-  var _BDD2 = _interopRequireDefault(_BDD);
+  var _Obey2 = _interopRequireDefault(_Obey);
 
   module.exports = UI;
 
@@ -31203,7 +31203,7 @@ define('bdd/ui/index', ['exports', 'module', 'jquery', './templates/feature', '.
       _this.templates[name] = _2['default'].template(tmplString);
     });
 
-    this.$root = _$['default']('<div id="easy-bdd"></div>').appendTo('body');
+    this.$root = _$['default']('<div id="obey"></div>').appendTo('body');
   }
 
   var fn = UI.prototype;
@@ -31240,7 +31240,7 @@ define('bdd/ui/index', ['exports', 'module', 'jquery', './templates/feature', '.
     var that = this;
     var $html;
 
-    _BDD2['default'].utils.tryCatch(function () {
+    _Obey2['default'].utils.tryCatch(function () {
       $html = _$['default'](templateFn(data));
     }, function (error) {
       var msg = 'Failed to render template "' + templateName + '".';
@@ -31303,8 +31303,8 @@ define('bdd/ui/index', ['exports', 'module', 'jquery', './templates/feature', '.
 
   fn.setupPage = function setupPage() {
     var html = this.renderTemplate('index');
-    this.$root = _$['default']('#easy-bdd');
-    this.$fixture = _$['default']('.easy-bdd-fixture');
+    this.$root = _$['default']('#obey');
+    this.$fixture = _$['default']('.obey-fixture');
     this.$root.append(html);
 
     this.setupEventListeners();
@@ -31330,35 +31330,35 @@ define('bdd/ui/index', ['exports', 'module', 'jquery', './templates/feature', '.
   };
 });
 
-define('bdd/ui/templates/error', ['exports', 'module'], function (exports, module) {
+define('obey/ui/templates/error', ['exports', 'module'], function (exports, module) {
   module.exports = '<div class="code">\r\n  <div class="message"><%= name + \': \' + message %></div>\r\n  <div class="content stack">\r\n    <% _.each(stackArray, function(line) { %>\r\n    <div><%= line %></div>\r\n    <% }); %>\r\n  </div>\r\n</div>';
 });
 
-define('bdd/ui/templates/example', ['exports', 'module'], function (exports, module) {
+define('obey/ui/templates/example', ['exports', 'module'], function (exports, module) {
   module.exports = '<tr class="example <%= result.status %> <%= result.status === \'failed\' ? \'toggle\' : \'\' %> ">\r\n  <td class="index"><%= _index %></td>\r\n  <td class="status"><%= result.status %></td>\r\n  <% _.each(headers, function(header) { %>\r\n  <td><%= data[header] %></td>\r\n  <% }); %>\r\n  <td><%= result.elapsedTime %>ms</td>\r\n</tr>\r\n<% if (result.error) { %>\r\n<tr class="example-error">\r\n  <td colspan="<%= 2 + headers.length %>">\r\n    <div>Failed at step "<span><%- result.failedStep.prefix + \' \' + result.failedStep.name %></span>"</div>\r\n    <div template="error" records="result.error"></div>\r\n  </td>\r\n</tr>\r\n<% } %>';
 });
 
-define('bdd/ui/templates/feature', ['exports', 'module'], function (exports, module) {
+define('obey/ui/templates/feature', ['exports', 'module'], function (exports, module) {
   module.exports = '\r\n<li class="feature <%= result.status %>">\r\n  <div class="heading <%= scenarios.length ? \'toggle\' : \'\' %>">\r\n    <span class="module" title="Module: <%= parentModule + \'/\' + module %>/">/<%= module %>/</span>\r\n    <div>\r\n        <div class="name">Feature: <%= name %></div>\r\n        <div class="stats"></div>\r\n    </div>\r\n  </div>\r\n  <div class="content">\r\n    <div class="narrative">\r\n      <% _.each(narrative, function(line) { %>\r\n      <p><%= line %></p>\r\n      <% }); %>\r\n    </div>\r\n    <ul class="scenarios">\r\n      <div template="scenario" records="scenarios"></div>\r\n    </ul>\r\n  </div>\r\n</li>';
 });
 
-define('bdd/ui/templates/index', ['exports', 'module'], function (exports, module) {
-  module.exports = '<h1>Welcome to Easy BDD</h1>\r\n<ul class="features"></ul>';
+define('obey/ui/templates/index', ['exports', 'module'], function (exports, module) {
+  module.exports = '<h1>Obey.JS: A BDD Framework</h1>\r\n<ul class="features"></ul>';
 });
 
-define('bdd/ui/templates/log', ['exports', 'module'], function (exports, module) {
+define('obey/ui/templates/log', ['exports', 'module'], function (exports, module) {
   module.exports = '<% if (obj.message && obj.stackArray) { %>\r\n<li class="log error">\r\n  <div template="error"></div>\r\n</li>\r\n<% } else { %>\r\n<li class="log assertion">\r\n  <% if (obj.toString() === \'[object Object]\') {debugger;} %>\r\n  <div><%= obj %></div>\r\n</li>\r\n<% } %>';
 });
 
-define('bdd/ui/templates/scenario', ['exports', 'module'], function (exports, module) {
+define('obey/ui/templates/scenario', ['exports', 'module'], function (exports, module) {
   module.exports = '<% if (! exclude) { %>\r\n\r\n<li class="scenario <%= result.status %>">\r\n  <div class="heading <%= steps.length ? \'toggle\' : \'\' %>">\r\n    <div>Scenario: <%= name %></div>\r\n    <% if (result.status === \'missing\') { %>\r\n    <div class="generate-missing-steps">Generate Missing Step Definitions</div>\r\n    <% } %>\r\n    <span class="elapsed-time"><%= elapsedTime + (typeof elapsedTime === \'number\' ? \'ms\' : \'\') %></span>\r\n  </div>\r\n  <% if (skip) { %>\r\n  <div>Skipping steps</div>\r\n  <% } else if (result.error) { %>\r\n  <div class="error">\r\n    <div template="error" records="result.error"></div>\r\n  </div>\r\n  <% } else { %>\r\n\r\n  <ol class="content steps">\r\n    <% if (tests.length === 1) { %>\r\n    <div template="step" records="steps"></div>\r\n    <% } else { %>\r\n      <% _.each(steps, function(step) { %>\r\n\r\n      <li class="step <%= step.result.status + \' step-prefix-\' + step.prefix.toLowerCase() %>">\r\n        <div class="heading">\r\n          <span name><%- step.prefix + \' \' + step.name %></span>\r\n        </div>\r\n      </li>\r\n\r\n      <% }); %>\r\n    <% } %>\r\n  </ol>\r\n\r\n  <% } %>\r\n\r\n  <% if (examples.length) { %>\r\n  <h2>Examples:</h2>\r\n  <div>Passed: <span><%= result.passed %></span>Failed: <span><%= result.failed %></span></div>\r\n  <table class="examples">\r\n    <thead>\r\n      <tr>\r\n        <td class="index">No.</td>\r\n        <td class="status">Status</td>\r\n        <% _.each(examples.headers, function(header) { %>\r\n        <td><%= header %></td>\r\n        <% }); %>\r\n        <td>Time</td>\r\n      </tr>\r\n    </thead>\r\n    <tbody>\r\n      <tr template="example" records="examples"></tr>\r\n    </tbody>\r\n  </table>\r\n  <% } %>\r\n\r\n</li>\r\n\r\n<% } %>';
 });
 
-define('bdd/ui/templates/step', ['exports', 'module'], function (exports, module) {
+define('obey/ui/templates/step', ['exports', 'module'], function (exports, module) {
   module.exports = '<% //debugger; %>\r\n<li class="step <%= result.status + \' step-prefix-\' + prefix.toLowerCase() %>">\r\n  <div class="heading <%= result.log.length ? \'toggle\' : \'\' %>">\r\n    <span name><%- prefix + \' \' + name %></span>\r\n  </div>\r\n  <ul class="content logs">\r\n    <div template="log" records="result.log"></div>\r\n  </ul>\r\n</li>';
 });
 
-define('bdd/utils/each-series', ['exports', 'module', 'jquery'], function (exports, module, _jquery) {
+define('obey/utils/each-series', ['exports', 'module', 'jquery'], function (exports, module, _jquery) {
   module.exports = eachSeries;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -31394,7 +31394,7 @@ define('bdd/utils/each-series', ['exports', 'module', 'jquery'], function (expor
   }
 });
 
-define('bdd/utils/functions', ['exports', './getArgumentNames'], function (exports, _getArgumentNames) {
+define('obey/utils/functions', ['exports', './getArgumentNames'], function (exports, _getArgumentNames) {
   exports.__esModule = true;
   exports.callWith = callWith;
   exports.bindWith = bindWith;
@@ -31462,7 +31462,7 @@ define('bdd/utils/functions', ['exports', './getArgumentNames'], function (expor
   }
 });
 
-define('bdd/utils/getArgumentNames', ['exports', 'module'], function (exports, module) {
+define('obey/utils/getArgumentNames', ['exports', 'module'], function (exports, module) {
   module.exports = getArgumentNames;
 
   function getArgumentNames(fn) {
@@ -31477,11 +31477,11 @@ define('bdd/utils/getArgumentNames', ['exports', 'module'], function (exports, m
   }
 });
 
-define("bdd/utils/globals/location", ["exports", "module"], function (exports, module) {
+define("obey/utils/globals/location", ["exports", "module"], function (exports, module) {
   module.exports = location;
 });
 
-define('bdd/utils/htmlEscape', ['exports', 'module'], function (exports, module) {
+define('obey/utils/htmlEscape', ['exports', 'module'], function (exports, module) {
   module.exports = escapeHtml;
   var entityMap = {
     '&': '&amp;',
@@ -31499,7 +31499,7 @@ define('bdd/utils/htmlEscape', ['exports', 'module'], function (exports, module)
   }
 });
 
-define('bdd/utils/index', ['exports', 'module', './printStack', './promises', './query-params', './try-catch', './each-series', './isAsync', './getArgumentNames', './stripComments', './htmlEscape', './smartTypeCast', './functions'], function (exports, module, _printStack, _promises, _queryParams, _tryCatch, _eachSeries, _isAsync, _getArgumentNames, _stripComments, _htmlEscape, _smartTypeCast, _functions) {
+define('obey/utils/index', ['exports', 'module', './printStack', './promises', './query-params', './try-catch', './each-series', './isAsync', './getArgumentNames', './stripComments', './htmlEscape', './smartTypeCast', './functions'], function (exports, module, _printStack, _promises, _queryParams, _tryCatch, _eachSeries, _isAsync, _getArgumentNames, _stripComments, _htmlEscape, _smartTypeCast, _functions) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _printStack2 = _interopRequireDefault(_printStack);
@@ -31538,7 +31538,7 @@ define('bdd/utils/index', ['exports', 'module', './printStack', './promises', '.
   };
 });
 
-define('bdd/utils/isAsync', ['exports', 'module', './getArgumentNames'], function (exports, module, _getArgumentNames) {
+define('obey/utils/isAsync', ['exports', 'module', './getArgumentNames'], function (exports, module, _getArgumentNames) {
   module.exports = isAsync;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -31557,7 +31557,7 @@ define('bdd/utils/isAsync', ['exports', 'module', './getArgumentNames'], functio
   }
 });
 
-define('bdd/utils/phantom-shims', ['exports'], function (exports) {
+define('obey/utils/phantom-shims', ['exports'], function (exports) {
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind#Polyfill
   if (!Function.prototype.bind) {
     Function.prototype.bind = function (oThis) {
@@ -31598,7 +31598,7 @@ define('bdd/utils/phantom-shims', ['exports'], function (exports) {
   }
 });
 
-define('bdd/utils/printStack', ['exports', 'module', './htmlEscape'], function (exports, module, _htmlEscape) {
+define('obey/utils/printStack', ['exports', 'module', './htmlEscape'], function (exports, module, _htmlEscape) {
   module.exports = printStack;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -31624,7 +31624,7 @@ define('bdd/utils/printStack', ['exports', 'module', './htmlEscape'], function (
   }
 });
 
-define('bdd/utils/promises', ['exports', 'module', 'jquery'], function (exports, module, _jquery) {
+define('obey/utils/promises', ['exports', 'module', 'jquery'], function (exports, module, _jquery) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -31660,7 +31660,7 @@ define('bdd/utils/promises', ['exports', 'module', 'jquery'], function (exports,
   module.exports = promises;
 });
 
-define('bdd/utils/query-params', ['exports', 'module', './globals/location'], function (exports, module, _globalsLocation) {
+define('obey/utils/query-params', ['exports', 'module', './globals/location'], function (exports, module, _globalsLocation) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _location = _interopRequireDefault(_globalsLocation);
@@ -31726,7 +31726,7 @@ define('bdd/utils/query-params', ['exports', 'module', './globals/location'], fu
   }
 });
 
-define("bdd/utils/smartTypeCast", ["exports", "module"], function (exports, module) {
+define("obey/utils/smartTypeCast", ["exports", "module"], function (exports, module) {
   module.exports = smartTypeCast;
 
   function smartTypeCast(value) {
@@ -31743,7 +31743,7 @@ define("bdd/utils/smartTypeCast", ["exports", "module"], function (exports, modu
   }
 });
 
-define('bdd/utils/stripComments', ['exports', 'module'], function (exports, module) {
+define('obey/utils/stripComments', ['exports', 'module'], function (exports, module) {
   module.exports = stripComments;
 
   function stripComments(str) {
@@ -31751,7 +31751,7 @@ define('bdd/utils/stripComments', ['exports', 'module'], function (exports, modu
   }
 });
 
-define('bdd/utils/throwError', ['exports', 'module'], function (exports, module) {
+define('obey/utils/throwError', ['exports', 'module'], function (exports, module) {
   module.exports = throwError;
 
   function throwError(msg) {
@@ -31761,17 +31761,17 @@ define('bdd/utils/throwError', ['exports', 'module'], function (exports, module)
       debugger;
     }
     var error = new Error(msg);
-    // if (BDD.tests.currentStep) {
-    //   BDD.tests.currentStep.log.push(error);
-    if (BDD.activeTest) {
-      BDD.activeTest.log.push(error);
+    // if (Obey.tests.currentStep) {
+    //   Obey.tests.currentStep.log.push(error);
+    if (Obey.activeTest) {
+      Obey.activeTest.log.push(error);
     } else {
       throw error;
     }
   }
 });
 
-define('bdd/utils/try-catch', ['exports', 'module', 'jquery', './query-params'], function (exports, module, _jquery, _queryParams) {
+define('obey/utils/try-catch', ['exports', 'module', 'jquery', './query-params'], function (exports, module, _jquery, _queryParams) {
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
   var _$ = _interopRequireDefault(_jquery);
@@ -31812,9 +31812,9 @@ define('bdd/utils/try-catch', ['exports', 'module', 'jquery', './query-params'],
   module.exports = tryCatch;
 });
 
-define('BDD', [], function() { return {}; });
+define('Obey', [], function() { return {}; });
 
-require("bdd/index");
+require("obey/index");
 
 })();
-//# sourceMappingURL=easy-bdd.map
+//# sourceMappingURL=obey.map

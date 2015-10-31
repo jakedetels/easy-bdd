@@ -1,6 +1,6 @@
 {
-  "name": "easy-bdd",
-  "version": "0.0.2",
+  "name": "obey",
+  "version": "0.0.3",
   "author": "Jake Detels <jake.detels@gmail.com>",
   "main": "lib/server/main",
   "private": true,
@@ -9,9 +9,9 @@
     "url": "https://github.com/jakedetels/easy-bdd.git"
   },
   "scripts": {
-    "start": "set easy_bdd_env=development && broccoli serve",
-    "test": "node bdd.js",
-    "build": "set easy_bdd_env=production && ( if exist dist rmdir dist /s /q ) && broccoli build dist"
+    "start": "set obey_env=development && broccoli serve",
+    "test": "node obey.js",
+    "build": "set obey_env=production && ( if exist dist rmdir dist /s /q ) && broccoli build dist"
   },
   "dependencies": {
     "broccoli": "^0.15.3",

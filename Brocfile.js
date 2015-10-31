@@ -1,5 +1,5 @@
 /* jshint node:true, laxbreak:true */
-var ENVIRONMENT = (process.env.easy_bdd_env || 'development').trim(); // [ test | development | production]
+var ENVIRONMENT = (process.env.obey_env || 'development').trim(); // [ test | development | production]
 
 var babel         = require('broccoli-babel-transpiler');
 var concatFiles   = require('broccoli-sourcemap-concat');
@@ -11,13 +11,13 @@ var compileLess   = require('broccoli-less-single');
 var EOL   = require('os').EOL;
 var app   = __dirname + '/lib/browser';
 
-var styles = compileLess(__dirname + '/lib/runner/styles', 'main.less', 'easy-bdd.css');
+var styles = compileLess(__dirname + '/lib/runner/styles', 'main.less', 'obey.css');
 
 var appJs = new BrocText(app, {extensions: 'html'});
 
 appJs = new Funnel(appJs, {
     include: ['**/*.js'],
-    destDir: ENVIRONMENT === 'test' ? 'app' : 'bdd'
+    destDir: ENVIRONMENT === 'test' ? 'app' : 'obey'
 });
 
 var babelOptions = {
@@ -63,7 +63,7 @@ appJs = concatFiles(appJs, {
 });
 
 var header = 
-    '\n/** Easy BDD - A behaviorially-driven development framework **/'
+    '\n/** Obey - A behaviorially-driven development framework **/'
   + '\n\n(function() {\n';
 
 var footer = '\n\n})();\n';
@@ -75,15 +75,15 @@ var inputFiles = [
   ];
 
 if (ENVIRONMENT !== 'test') {
-  footer = '\nrequire("bdd/index");' + footer;
+  footer = '\nrequire("obey/index");' + footer;
 }
 
 appJs = concatFiles(mergeTrees(trees), {
   inputFiles: inputFiles,
-  outputFile: ENVIRONMENT === 'test' ? 'easy-bdd-test.js' : 'easy-bdd.js',
+  outputFile: ENVIRONMENT === 'test' ? 'obey-test.js' : 'obey.js',
   separator: EOL,
   header: header,
-  footer: "\ndefine('BDD', [], function() { return {}; });\n" + footer
+  footer: "\ndefine('Obey', [], function() { return {}; });\n" + footer
 });
 
 module.exports = mergeTrees([appJs, styles]);

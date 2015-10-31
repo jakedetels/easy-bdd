@@ -1,0 +1,208 @@
+#obey {
+  /* YUI 3.5.0 reset.css (http://developer.yahoo.com/yui/3/cssreset/) - http://cssreset.com */
+}
+#obey html {
+  color: #000;
+  background: #FFF;
+}
+#obey body,
+#obey div,
+#obey dl,
+#obey dt,
+#obey dd,
+#obey ul,
+#obey ol,
+#obey li,
+#obey h1,
+#obey h2,
+#obey h3,
+#obey h4,
+#obey h5,
+#obey h6,
+#obey pre,
+#obey code,
+#obey form,
+#obey fieldset,
+#obey legend,
+#obey input,
+#obey textarea,
+#obey p,
+#obey blockquote,
+#obey th,
+#obey td {
+  margin: 0;
+  padding: 0;
+}
+#obey table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+#obey fieldset,
+#obey img {
+  border: 0;
+}
+#obey address,
+#obey caption,
+#obey cite,
+#obey code,
+#obey dfn,
+#obey em,
+#obey strong,
+#obey th,
+#obey var {
+  font-style: normal;
+  font-weight: normal;
+}
+#obey ol,
+#obey ul {
+  list-style: none;
+}
+#obey caption,
+#obey th {
+  text-align: left;
+}
+#obey h1,
+#obey h2,
+#obey h3,
+#obey h4,
+#obey h5,
+#obey h6 {
+  font-size: 100%;
+  font-weight: normal;
+}
+#obey q:before,
+#obey q:after {
+  content: '';
+}
+#obey abbr,
+#obey acronym {
+  border: 0;
+  font-variant: normal;
+}
+#obey sup {
+  vertical-align: text-top;
+}
+#obey sub {
+  vertical-align: text-bottom;
+}
+#obey input,
+#obey textarea,
+#obey select {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+#obey input,
+#obey textarea,
+#obey select {
+  *font-size: 100%;
+}
+#obey legend {
+  color: #000;
+}
+#obey #yui3-css-stamp.cssreset {
+  display: none;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  background: white;
+}
+#obey {
+  font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  margin: 10px;
+}
+#obey .feature {
+  border: 1px solid black;
+  background: #F0F0F0;
+  margin: 5px;
+}
+#obey .feature > .heading .name {
+  font-weight: bold;
+}
+#obey .feature > .heading .module {
+  float: right;
+  font-style: italic;
+}
+#obey .feature > .heading,
+#obey .feature > .content {
+  padding: 5px;
+}
+#obey .feature > .content {
+  border-top: 1px solid black;
+}
+#obey .feature .narrative {
+  font-style: italic;
+}
+#obey .feature .narrative,
+#obey .feature .scenarios {
+  margin-left: 10px;
+}
+#obey .feature .scenario {
+  margin-top: 10px;
+}
+#obey .feature .scenario .heading > * {
+  display: inline-block;
+}
+#obey .feature .scenario .heading .elapsed-time {
+  float: right;
+}
+#obey .feature .scenario ul {
+  margin-left: 20px;
+}
+#obey .feature .scenario .steps {
+  list-style-type: decimal;
+  margin-left: 24px;
+}
+#obey .feature .scenario .steps .step-prefix-and,
+#obey .feature .scenario .steps .step-prefix-but {
+  /* margin-left: 10px; */
+}
+#obey .passed {
+  color: green;
+}
+#obey .failed {
+  color: red;
+}
+#obey .missing {
+  color: orange;
+}
+#obey .skipped {
+  color: purple;
+}
+#obey .toggle {
+  cursor: pointer;
+}
+#obey .log,
+#obey .code {
+  font-family: monospace;
+}
+#obey .log .stack,
+#obey .code .stack {
+  margin-left: 20px;
+}
+#obey table.examples {
+  width: 100%;
+}
+#obey table.examples td,
+#obey table.examples th {
+  border: 1px solid #333;
+  padding: 2px 2px 2px 5px;
+}
+#obey table.examples .example-error td {
+  padding-left: 20px;
+}
+#obey table.examples td.index,
+#obey table.examples td.status {
+  text-align: center;
+  padding: 2px;
+}
+#obey table.examples td.index {
+  width: 30px;
+}
+#obey table.examples td.status {
+  width: 50px;
+}

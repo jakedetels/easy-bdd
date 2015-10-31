@@ -1,5 +1,5 @@
 {
-  "name": "easy-bdd",
+  "name": "obey",
   "version": "0.0.0",
   "author": "Jake Detels <jake.detels@gmail.com>",
   "main": "lib/browser/index.js",
