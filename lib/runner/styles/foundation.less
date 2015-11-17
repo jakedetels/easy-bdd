@@ -6,7 +6,17 @@ body {
   background: white;
 }
 
-#obey {
+.obey-fixture {
+  zoom: 0.5;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 800px;
+  width: 1000px;
+  border: 1px solid #ccc;
+}
+
+.obey-root {
 
   font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -71,11 +81,11 @@ body {
     }
   
   }
-  .passed {
+  .passed, .passing {
     color: green;
   }
 
-  .failed {
+  .failed, .failing {
     color: red;
   }
 
@@ -83,7 +93,7 @@ body {
     color: orange;
   }
 
-  .skipped {
+  .skipped, .pending {
     color: purple;
   }
 

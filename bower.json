@@ -15,5 +15,8 @@
     "loader.js": "~3.3.0",
     "underscore": "~1.8.3",
     "sinon": "http://sinonjs.org/releases/sinon-1.17.1.js"
+  },
+  "devDependencies": {
+    "rsvp.js": "rsvp#~3.1.0"
   }
 }

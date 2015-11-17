@@ -1,12 +1,12 @@
 {
   "name": "obey",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Jake Detels <jake.detels@gmail.com>",
   "main": "lib/server/main",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/jakedetels/easy-bdd.git"
+    "url": "https://github.com/jakedetels/obey.js.git"
   },
   "scripts": {
     "start": "set obey_env=development && broccoli serve",

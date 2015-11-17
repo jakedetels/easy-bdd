@@ -40,8 +40,9 @@ require = requirejs = (function(_require) {
   }
 
   function createCallback(mockModule, moduleName) {
-    // the technique of using the Function constructor is required
-    // to be compatible test coverage tools like blanket.js
+    // The technique of using the Function constructor is required
+    // to presevere original scope of mocked module. Allows
+    // compatibility with test coverage tools like blanket.js.
     var fnName = 'fn' + '_' + (++mockCount) + '_' + moduleName;
     mockRequire.mocks[fnName] = mockModule;
     return new Function('return window.require.mocks["' + fnName + '"];');

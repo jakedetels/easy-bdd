@@ -7,6 +7,7 @@ var mergeTrees    = require('broccoli-merge-trees');
 var Funnel        = require('broccoli-funnel');
 var BrocText      = require('broccoli-export-text');
 var compileLess   = require('broccoli-less-single');
+var stringReplace = require('broccoli-string-replace');
 
 var EOL   = require('os').EOL;
 var app   = __dirname + '/lib/browser';
@@ -14,10 +15,11 @@ var app   = __dirname + '/lib/browser';
 var styles = compileLess(__dirname + '/lib/runner/styles', 'main.less', 'obey.css');
 
 var appJs = new BrocText(app, {extensions: 'html'});
+var amdModulePrefix = ENVIRONMENT === 'test' ? 'app' : 'obey';
 
 appJs = new Funnel(appJs, {
     include: ['**/*.js'],
-    destDir: ENVIRONMENT === 'test' ? 'app' : 'obey'
+    destDir: amdModulePrefix
 });
 
 var babelOptions = {
@@ -32,17 +34,19 @@ appJs = babel(appJs, babelOptions);
 var bowerModificationsTree = __dirname + '/bower_modifications';
 var bower = mergeTrees([__dirname + '/bower_components', bowerModificationsTree]);
 
+bower = makeNamedAmdExport(bower, 'rsvp.js/rsvp.js', 'RSVP');
+
 var vendorFiles = [
   'loader.js/loader.js',
   'loader-amd-support.js',
   'jquery/dist/jquery.js',
   'jquery-no-conflict.js',
+  'rsvp.js/rsvp.js',
   'chai/chai.js',
   'underscore/underscore.js',
   'sinon/index.js',
   'blanket/dist/qunit/blanket.js'
 ];
-
 
 if (ENVIRONMENT === 'test') {
   vendorFiles.splice(1, 0, 'loader-globalize.js');
@@ -83,7 +87,21 @@ appJs = concatFiles(mergeTrees(trees), {
   outputFile: ENVIRONMENT === 'test' ? 'obey-test.js' : 'obey.js',
   separator: EOL,
   header: header,
-  footer: "\ndefine('Obey', [], function() { return {}; });\n" + footer
+  footer: "\n"
+    + "define('Obey', [], function() { return {}; });\n"
+    + "require.modulePrefix = '" + amdModulePrefix + "'; \n"
+    + footer
 });
 
 module.exports = mergeTrees([appJs, styles]);
+
+function makeNamedAmdExport(tree, fileName, moduleName) {
+
+  return stringReplace(tree, {
+    files: [fileName],
+    pattern: {
+      match: /([^\S])define\(\s*(\[|function)/,
+      replacement: '$1define("' + moduleName + '", $2'
+    }
+  });
+}

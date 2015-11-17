@@ -1,6 +1,3 @@
-// import FeatureTree from 'app/models/FeatureTree';
-// import Feature from 'app/models/Feature';
-
 var childFeature = `
   Feature: Foo
 

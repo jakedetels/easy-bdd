@@ -1,106 +1,106 @@
-#obey {
+.obey-root {
   /* YUI 3.5.0 reset.css (http://developer.yahoo.com/yui/3/cssreset/) - http://cssreset.com */
 }
-#obey html {
+.obey-root html {
   color: #000;
   background: #FFF;
 }
-#obey body,
-#obey div,
-#obey dl,
-#obey dt,
-#obey dd,
-#obey ul,
-#obey ol,
-#obey li,
-#obey h1,
-#obey h2,
-#obey h3,
-#obey h4,
-#obey h5,
-#obey h6,
-#obey pre,
-#obey code,
-#obey form,
-#obey fieldset,
-#obey legend,
-#obey input,
-#obey textarea,
-#obey p,
-#obey blockquote,
-#obey th,
-#obey td {
+.obey-root body,
+.obey-root div,
+.obey-root dl,
+.obey-root dt,
+.obey-root dd,
+.obey-root ul,
+.obey-root ol,
+.obey-root li,
+.obey-root h1,
+.obey-root h2,
+.obey-root h3,
+.obey-root h4,
+.obey-root h5,
+.obey-root h6,
+.obey-root pre,
+.obey-root code,
+.obey-root form,
+.obey-root fieldset,
+.obey-root legend,
+.obey-root input,
+.obey-root textarea,
+.obey-root p,
+.obey-root blockquote,
+.obey-root th,
+.obey-root td {
   margin: 0;
   padding: 0;
 }
-#obey table {
+.obey-root table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-#obey fieldset,
-#obey img {
+.obey-root fieldset,
+.obey-root img {
   border: 0;
 }
-#obey address,
-#obey caption,
-#obey cite,
-#obey code,
-#obey dfn,
-#obey em,
-#obey strong,
-#obey th,
-#obey var {
+.obey-root address,
+.obey-root caption,
+.obey-root cite,
+.obey-root code,
+.obey-root dfn,
+.obey-root em,
+.obey-root strong,
+.obey-root th,
+.obey-root var {
   font-style: normal;
   font-weight: normal;
 }
-#obey ol,
-#obey ul {
+.obey-root ol,
+.obey-root ul {
   list-style: none;
 }
-#obey caption,
-#obey th {
+.obey-root caption,
+.obey-root th {
   text-align: left;
 }
-#obey h1,
-#obey h2,
-#obey h3,
-#obey h4,
-#obey h5,
-#obey h6 {
+.obey-root h1,
+.obey-root h2,
+.obey-root h3,
+.obey-root h4,
+.obey-root h5,
+.obey-root h6 {
   font-size: 100%;
   font-weight: normal;
 }
-#obey q:before,
-#obey q:after {
+.obey-root q:before,
+.obey-root q:after {
   content: '';
 }
-#obey abbr,
-#obey acronym {
+.obey-root abbr,
+.obey-root acronym {
   border: 0;
   font-variant: normal;
 }
-#obey sup {
+.obey-root sup {
   vertical-align: text-top;
 }
-#obey sub {
+.obey-root sub {
   vertical-align: text-bottom;
 }
-#obey input,
-#obey textarea,
-#obey select {
+.obey-root input,
+.obey-root textarea,
+.obey-root select {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
 }
-#obey input,
-#obey textarea,
-#obey select {
+.obey-root input,
+.obey-root textarea,
+.obey-root select {
   *font-size: 100%;
 }
-#obey legend {
+.obey-root legend {
   color: #000;
 }
-#obey #yui3-css-stamp.cssreset {
+.obey-root #yui3-css-stamp.cssreset {
   display: none;
 }
 html,
@@ -110,78 +110,90 @@ body {
 body {
   background: white;
 }
-#obey {
+.obey-fixture {
+  zoom: 0.5;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 800px;
+  width: 1000px;
+  border: 1px solid #ccc;
+}
+.obey-root {
   font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial, sans-serif;
   font-size: 14px;
   margin: 10px;
 }
-#obey .feature {
+.obey-root .feature {
   border: 1px solid black;
   background: #F0F0F0;
   margin: 5px;
 }
-#obey .feature > .heading .name {
+.obey-root .feature > .heading .name {
   font-weight: bold;
 }
-#obey .feature > .heading .module {
+.obey-root .feature > .heading .module {
   float: right;
   font-style: italic;
 }
-#obey .feature > .heading,
-#obey .feature > .content {
+.obey-root .feature > .heading,
+.obey-root .feature > .content {
   padding: 5px;
 }
-#obey .feature > .content {
+.obey-root .feature > .content {
   border-top: 1px solid black;
 }
-#obey .feature .narrative {
+.obey-root .feature .narrative {
   font-style: italic;
 }
-#obey .feature .narrative,
-#obey .feature .scenarios {
+.obey-root .feature .narrative,
+.obey-root .feature .scenarios {
   margin-left: 10px;
 }
-#obey .feature .scenario {
+.obey-root .feature .scenario {
   margin-top: 10px;
 }
-#obey .feature .scenario .heading > * {
+.obey-root .feature .scenario .heading > * {
   display: inline-block;
 }
-#obey .feature .scenario .heading .elapsed-time {
+.obey-root .feature .scenario .heading .elapsed-time {
   float: right;
 }
-#obey .feature .scenario ul {
+.obey-root .feature .scenario ul {
   margin-left: 20px;
 }
-#obey .feature .scenario .steps {
+.obey-root .feature .scenario .steps {
   list-style-type: decimal;
   margin-left: 24px;
 }
-#obey .feature .scenario .steps .step-prefix-and,
-#obey .feature .scenario .steps .step-prefix-but {
+.obey-root .feature .scenario .steps .step-prefix-and,
+.obey-root .feature .scenario .steps .step-prefix-but {
   /* margin-left: 10px; */
 }
-#obey .passed {
+.obey-root .passed,
+.obey-root .passing {
   color: green;
 }
-#obey .failed {
+.obey-root .failed,
+.obey-root .failing {
   color: red;
 }
-#obey .missing {
+.obey-root .missing {
   color: orange;
 }
-#obey .skipped {
+.obey-root .skipped,
+.obey-root .pending {
   color: purple;
 }
-#obey .toggle {
+.obey-root .toggle {
   cursor: pointer;
 }
-#obey .log,
-#obey .code {
+.obey-root .log,
+.obey-root .code {
   font-family: monospace;
 }
-#obey .log .stack,
-#obey .code .stack {
+.obey-root .log .stack,
+.obey-root .code .stack {
   margin-left: 20px;
 }
 #obey table.examples {
